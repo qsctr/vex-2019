@@ -4,17 +4,19 @@
 import Turtle
 
 main = do
+    name <- either id id . toText . basename <$> pwd
+    echo $ unsafeTextToLine $ "Building project " <> name
     args <- arguments
     when ("clean" `elem` args) $ do
-        echo "clean"
+        echo "[clean]"
         procs "make" ["-f", "purs.mk", "clean"] empty
         procs "prosv5" ["make", "clean"] empty
     when ("build" `elem` args || null args) $ do
-        echo "build"
+        echo "[build]"
         cptree "cpp" "output/src"
         cptree "psn-runtime" "output/src"
         procs "make" ["-f", "purs.mk"] empty
         procs "prosv5" ["make"] empty
     when ("upload" `elem` args) $ do
-        echo "upload"
-        procs "prosv5" ["upload"] empty
+        echo "[upload]"
+        procs "prosv5" ["upload", "--name", name] empty
