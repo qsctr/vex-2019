@@ -24,8 +24,10 @@ void opcontrol() {
 	pros::Motor intakeMotor(7, MOTOR_GEARSET_36);
 	intakeMotor.set_encoder_units(MOTOR_ENCODER_DEGREES);
 	while (true) {
-		frontLeftMotor = backLeftMotor = controller.get_analog(ANALOG_LEFT_Y);
-		frontRightMotor = backRightMotor = controller.get_analog(ANALOG_RIGHT_Y);
+		frontLeftMotor = controller.get_analog(ANALOG_LEFT_Y);
+		backLeftMotor = controller.get_analog(ANALOG_LEFT_Y);
+		frontRightMotor = controller.get_analog(ANALOG_RIGHT_Y);
+		backRightMotor = controller.get_analog(ANALOG_RIGHT_Y);
 		if (controller.get_digital(DIGITAL_R1)) {
 			leftLiftMotor = rightLiftMotor = 127;
 		} else if (controller.get_digital(DIGITAL_R2)) {
