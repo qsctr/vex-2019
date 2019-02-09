@@ -1,0 +1,7 @@
+# build output
+bin
+output
+
+# purescript
+.psc-package
+.psc-ide-port
