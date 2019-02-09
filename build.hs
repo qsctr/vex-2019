@@ -18,6 +18,7 @@ main = do
             echo "[upload]"
             procs "prosv5" ["upload", "--name", name] empty
         checkConnected = do
+            echo "[check connected]"
             (exitCode, output) <- procStrict "prosv5" ["v5", "status"] empty
             pure $ exitCode == ExitSuccess
                 && "Connected to V5 on" `T.isPrefixOf` output
@@ -25,12 +26,15 @@ main = do
             echo "[clean]"
             procs "make" ["-f", "purs.mk", "clean"] empty
             procs "prosv5" ["make", "clean"] empty
-    if null args
-        then do
-            build
-            connected <- checkConnected
-            when connected upload
+    if null args then do
+        build
+        connected <- checkConnected
+        if connected then do
+            echo "V5 connected, uploading"
+            upload
         else do
-            when ("clean" `elem` args) clean
-            when ("build" `elem` args) build
-            when ("upload" `elem` args) upload
+            echo "No V5 connected, not uploading"
+    else do
+        when ("clean" `elem` args) clean
+        when ("build" `elem` args) build
+        when ("upload" `elem` args) upload
