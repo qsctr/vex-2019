@@ -4,13 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build and upload",
             "type": "shell",
-            "command": "stack build.hs -- build",
+            "command": "stack build.hs",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "problemMatcher": []
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "stack build.hs -- build",
             "problemMatcher": []
         },
         {
