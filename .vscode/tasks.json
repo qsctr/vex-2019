@@ -10,17 +10,20 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "upload",
             "type": "shell",
             "command": "stack build.hs -- upload",
+            "problemMatcher": []
         },
         {
             "label": "clean",
             "type": "shell",
-            "command": "stack build.hs -- clean"
+            "command": "stack build.hs -- clean",
+            "problemMatcher": []
         }
     ]
 }
