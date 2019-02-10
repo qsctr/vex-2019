@@ -1,7 +1,7 @@
 {
   "name": "ps",
   "set": "psc-0.12.2",
-  "source": "https://github.com/purescript/package-sets.git",
+  "source": "https://github.com/qsctr/package-sets.git",
   "depends": [
     "prelude"
   ]
