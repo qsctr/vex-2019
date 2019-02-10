@@ -1,5 +1,14 @@
 #include "main.h"
 
+pros::Controller controller(CONTROLLER_MASTER);
+pros::Motor frontLeftMotor(9);
+pros::Motor backLeftMotor(10);
+pros::Motor frontRightMotor(18, true);
+pros::Motor backRightMotor(19, true);
+pros::Motor leftLiftMotor(8, MOTOR_GEARSET_36, true);
+pros::Motor rightLiftMotor(17, MOTOR_GEARSET_36);
+pros::Motor intakeMotor(7, MOTOR_GEARSET_36);
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -14,14 +23,10 @@
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	pros::Controller controller(CONTROLLER_MASTER);
-	pros::Motor frontLeftMotor(9);
-	pros::Motor backLeftMotor(10);
-	pros::Motor frontRightMotor(18, true);
-	pros::Motor backRightMotor(19, true);
-	pros::Motor leftLiftMotor(8, MOTOR_GEARSET_36, true);
-	pros::Motor rightLiftMotor(17, MOTOR_GEARSET_36);
-	pros::Motor intakeMotor(7, MOTOR_GEARSET_36);
+	frontLeftMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	frontRightMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	backLeftMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	backRightMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
 	intakeMotor.set_encoder_units(MOTOR_ENCODER_DEGREES);
 	while (true) {
 		frontLeftMotor = controller.get_analog(ANALOG_LEFT_Y);
@@ -29,9 +34,11 @@ void opcontrol() {
 		frontRightMotor = controller.get_analog(ANALOG_RIGHT_Y);
 		backRightMotor = controller.get_analog(ANALOG_RIGHT_Y);
 		if (controller.get_digital(DIGITAL_R1)) {
-			leftLiftMotor = rightLiftMotor = 127;
+			leftLiftMotor = 127;
+			rightLiftMotor = 127;
 		} else if (controller.get_digital(DIGITAL_R2)) {
-			leftLiftMotor = rightLiftMotor = -127;
+			leftLiftMotor = -127;
+			rightLiftMotor = -127;
 		} else {
 			leftLiftMotor = rightLiftMotor = 0;
 		}
