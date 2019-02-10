@@ -13,7 +13,7 @@ SRCDIR=$(ROOT)/output/src
 # SRCDIR=$(ROOT)/cpp
 INCDIR=$(ROOT)/include
 
-WARNFLAGS+=
+WARNFLAGS+=-Wall -Wno-psabi
 EXTRA_CFLAGS=
 EXTRA_CXXFLAGS=
 
