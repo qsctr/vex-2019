@@ -10,6 +10,8 @@ main = do
     args <- arguments
     let build = do
             echo "[build]"
+            cptree "psn-ffi" "ffi"
+            cptree "user-ffi" "ffi"
             cptree "cpp" "output/src"
             cptree "psn-runtime" "output/src"
             procs "make" ["-f", "purs.mk"] empty
