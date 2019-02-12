@@ -1,5 +1,5 @@
-ffi/* linguist-vendored
 include/* linguist-vendored
+psn-ffi/* linguist-vendored
 psn-runtime/* linguist-vendored
 
 common.mk linguist-vendored
