@@ -30,6 +30,18 @@
             "type": "shell",
             "command": "stack build.hs -- clean",
             "problemMatcher": []
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "command": "prosv5 v5 run",
+            "problemMatcher": []
+        },
+        {
+            "label": "stop",
+            "type": "shell",
+            "command": "prosv5 v5 stop",
+            "problemMatcher": []
         }
     ]
 }
