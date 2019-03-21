@@ -1,13 +1,13 @@
 #include "main.h"
 
 pros::Controller controller(CONTROLLER_MASTER);
-pros::Motor frontLeftMotor(9);
-pros::Motor backLeftMotor(10);
-pros::Motor frontRightMotor(18, true);
-pros::Motor backRightMotor(19, true);
-pros::Motor leftLiftMotor(8, MOTOR_GEARSET_36, true);
-pros::Motor rightLiftMotor(17, MOTOR_GEARSET_36);
-pros::Motor intakeMotor(7, MOTOR_GEARSET_36);
+pros::Motor frontLeftMotor(1, MOTOR_GEARSET_18);
+pros::Motor backLeftMotor(11, MOTOR_GEARSET_18);
+pros::Motor frontRightMotor(10, MOTOR_GEARSET_18, true);
+pros::Motor backRightMotor(20, MOTOR_GEARSET_18, true);
+pros::Motor leftLiftMotor(2, MOTOR_GEARSET_18, true);
+pros::Motor rightLiftMotor(9, MOTOR_GEARSET_18);
+pros::Motor intakeMotor(3, MOTOR_GEARSET_18);
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -27,7 +27,11 @@ void opcontrol() {
 	frontRightMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
 	backLeftMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
 	backRightMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	leftLiftMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	rightLiftMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	intakeMotor.set_brake_mode(MOTOR_BRAKE_BRAKE);
 	intakeMotor.set_encoder_units(MOTOR_ENCODER_DEGREES);
+	// controller.print(0, 0, "hello world");
 	while (true) {
 		frontLeftMotor = controller.get_analog(ANALOG_LEFT_Y);
 		backLeftMotor = controller.get_analog(ANALOG_LEFT_Y);
@@ -40,12 +44,13 @@ void opcontrol() {
 			leftLiftMotor = -127;
 			rightLiftMotor = -127;
 		} else {
-			leftLiftMotor = rightLiftMotor = 0;
+			leftLiftMotor = 0;
+			rightLiftMotor = 0;
 		}
 		if (controller.get_digital(DIGITAL_L1)) {
-			intakeMotor.move_absolute(180, 127);
+			intakeMotor.move_absolute(180, 75);
 		} else if (controller.get_digital(DIGITAL_L2)) {
-			intakeMotor.move_absolute(0, 127);
+			intakeMotor.move_absolute(0, 75);
 		}
 		pros::delay(20);
 	}
