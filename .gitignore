@@ -1,8 +1,1 @@
-# build output
 bin
-ffi
-output
-
-# purescript
-.psc-package
-.psc-ide-port
