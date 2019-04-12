@@ -93,7 +93,7 @@ void opcontrol() {
             presetMotors::lift.movePreset(600, GREEN_RPM);
             presetMotors::intake.movePreset(-30, RED_RPM / 4);
         } else if (buttons::highPoleDelivery.isPressed()) {
-            presetMotors::lift.movePreset(700, GREEN_RPM);
+            presetMotors::lift.movePreset(750, GREEN_RPM);
             presetMotors::intake.movePreset(70, RED_RPM / 4);
         } else if (buttons::lowPolePickup.isPressed()) {
             presetMotors::lift.movePreset(300, GREEN_RPM);
