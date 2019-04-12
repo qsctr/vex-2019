@@ -1,5 +1,8 @@
 firmware/* linguist-vendored
-include/* linguist-vendored
-include/robot.h -linguist-vendored
+include/display/* linguist-vendored
+include/okapi/* linguist-vendored
+include/pros/* linguist-vendored
+include/api.h linguist-vendored
+include/main.h linguist-vendored
 common.mk linguist-vendored
 Makefile linguist-vendored

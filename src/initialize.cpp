@@ -1,7 +1,10 @@
 #include "main.h"
+#include "robot.h"
 
-void initialize() {}
-
-void disabled() {}
+void initialize() {
+    robot::setup();
+}
 
 void competition_initialize() {}
+
+void disabled() {}

@@ -23,8 +23,6 @@
 
 using namespace okapi;
 
-#include "robot.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
