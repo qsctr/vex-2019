@@ -19,6 +19,8 @@ namespace {
         ControllerButton highPoleDelivery(ControllerDigital::X);
         ControllerButton lowPolePickup(ControllerDigital::left);
         ControllerButton highPolePickup(ControllerDigital::up);
+        ControllerButton intakeFlip(ControllerDigital::right);
+        ControllerButton intakeFlat(ControllerDigital::down);
     }
 
     namespace presetMotors {
@@ -106,6 +108,11 @@ void opcontrol() {
             presetMotors::lift.moveManual(-MAX_VOLTAGE);
         } else if (!presetMotors::lift.presetActive()) {
             presetMotors::lift.moveManual(0);
+        }
+        if (buttons::intakeFlip.isPressed()) {
+            presetMotors::intake.movePreset(300, RED_RPM);
+        } else if (buttons::intakeFlat.isPressed()) {
+            presetMotors::intake.movePreset(0, RED_RPM);
         }
         if (buttons::manualIntakeIn.isPressed()) {
             presetMotors::intake.moveManual(MAX_VOLTAGE);
