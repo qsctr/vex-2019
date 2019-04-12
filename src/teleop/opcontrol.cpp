@@ -1,11 +1,11 @@
 #include "main.h"
 #include "constants.h"
-#include "presetMotor.h"
 #include "robot.h"
+#include "teleop/presetMotor.h"
 
 #include <cstdio>
 
-namespace {
+namespace teleop {
 
     Controller controller;
 
@@ -56,6 +56,7 @@ namespace {
 }
 
 void opcontrol() {
+    using namespace teleop;
     double liftTarget = -200;
     // intake 960 flat
         // rel 600 up
