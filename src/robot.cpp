@@ -1,10 +1,10 @@
 #include "main.h"
 #include "robot.h"
 
-namespace robot {
+using gearset = AbstractMotor::gearset;
+using brakeMode = AbstractMotor::brakeMode;
 
-    using gearset = AbstractMotor::gearset;
-    using brakeMode = AbstractMotor::brakeMode;
+namespace robot {
 
     MotorGroup baseLeft {5, 11};
     MotorGroup baseRight {-6, -20};
