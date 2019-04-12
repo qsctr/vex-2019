@@ -1,7 +1,7 @@
 #include "main.h"
-#include "constants.h"
-#include "robot.h"
-#include "teleop/presetMotor.h"
+#include "constants.hpp"
+#include "robot.hpp"
+#include "teleop/presetMotor.hpp"
 
 #include <cstdio>
 
