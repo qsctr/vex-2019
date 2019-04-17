@@ -29,10 +29,11 @@ void autonomous() {
     intakeController.setTarget(10);
     robot::drive.turnAngle(-80_deg);
     liftController.setTarget(650);
+    liftController.waitUntilSettled();
     intakeController.setTarget(300);
     intakeController.waitUntilSettled();
-    // intakeController.setMaxVelocity(RED_RPM);
     intakeController.setTarget(-30);
+    // intakeController.setMaxVelocity(RED_RPM);
     profileController.setTarget("toPole");
     profileController.waitUntilSettled();
     robot::baseLeft.moveVoltage(MAX_VOLTAGE / 3);
@@ -45,7 +46,7 @@ void autonomous() {
     // intakeController.waitUntilSettled();
     // intakeController.setTarget(-30);
     intakeController.waitUntilSettled();
-    liftController.waitUntilSettled();
+    // liftController.waitUntilSettled();
     liftController.setTarget(400);
     liftController.waitUntilSettled();
     printf("%u\n", pros::millis());

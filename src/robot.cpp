@@ -9,7 +9,7 @@ namespace robot {
     MotorGroup baseLeft {5, 11};
     MotorGroup baseRight {-6, -20};
     ChassisControllerIntegrated drive = ChassisControllerFactory::create(
-        baseLeft, baseRight, gearset::green, {4_in, 13.75_in});
+        baseLeft, baseRight, gearset::green, {3.85_in, 13.75_in});
     MotorGroup lift {-4, 7};
     Motor intake {-3};
 

@@ -1,6 +1,7 @@
 #include "main.h"
 #include "constants.hpp"
 #include "robot.hpp"
+#include "teleop/controlMap.hpp"
 #include "teleop/presetMotor.hpp"
 
 #include <cstdio>
@@ -28,80 +29,92 @@ namespace teleop {
         PresetMotor intake {robot::intake};
     }
 
-    // auto presetControl(AbstractMotor& motor) {
-    //     bool presetActive = false;
-    //     return [&] {
-    //         if (buttons::manualLiftUp.isPressed()) {
-    //             motor.moveVoltage(MAX_VOLTAGE);
-    //             presetActive = false;
-    //         } else if (buttons::manualLiftDown.isPressed()) {
-    //             motor.moveVoltage(-MAX_VOLTAGE);
-    //             presetActive = false;
-    //         } else if (!presetActive) {
-    //             motor.moveVoltage(0);
-    //         }
-    //         if (buttons::groundPickup.isPressed()) {
-    //             motor.moveAbsolute(-50, GREEN_RPM);
-    //             presetActive = true;
-    //         } else if (buttons::lowPoleDelivery.isPressed()) {
-    //             motor.moveAbsolute(600, GREEN_RPM);
-    //             presetActive = true;
-    //         } else if (buttons::highPoleDelivery.isPressed()) {
-    //             motor.moveAbsolute(700, GREEN_RPM);
-    //             presetActive = true;
-    //         }
-    //     };
-    // }
+    template<std::size_t P, std::size_t M>
+    auto makePresetRunner(ControlMap<P> presetControls,
+    ControlMap<M> manualControls, std::function<void()> manualDefault) {
+        return [=, presetActive = false]() mutable {
+            if (controlMap::run(manualControls)) {
+                presetActive = false;
+            } else if (controlMap::run(presetControls)) {
+                presetActive = true;
+            } else if (!presetActive) {
+                manualDefault();
+            }
+        };
+    }
+
+    
+
+    // auto runLift = makePresetRunner({
+    //     {buttons::groundPickup, [] {
+    //         robot::lift.moveAbsolute(-50, GREEN_RPM);
+    //         robot::intake.moveAbsolute(-30, RED_RPM);
+    //     }},
+    //     {buttons::lowPoleDelivery, [] {
+    //         robot::lift.moveAbsolute(600, GREEN_RPM);
+    //         robot::intake.moveAbsolute(-30, RED_RPM / 2);
+    //     }},
+    //     {buttons::highPoleDelivery, [] {
+    //         robot::lift.moveAbsolute(750, GREEN_RPM);
+    //         robot::intake.moveAbsolute(70, RED_RPM / 2);
+    //     }},
+    //     {buttons::lowPolePickup, [] {
+    //         robot::lift.moveAbsolute(300, GREEN_RPM);
+    //         robot::intake.moveAbsolute(0, RED_RPM / 2);
+    //     }},
+    //     {buttons::highPolePickup, [] {
+    //         robot::lift.moveAbsolute(500, GREEN_RPM);
+    //         robot::intake.moveAbsolute(0, RED_RPM / 2);
+    //     }}
+    // }, {
+    //     {buttons::manualLiftUp, [] {
+
+    //     }}
+    // })
 
 }
 
 void opcontrol() {
     using namespace teleop;
-    double liftTarget = -200;
-    // intake 960 flat
-        // rel 600 up
-        // rel -30 down
-
-    ADIButton limitSwitch {'A'};
+    // ADIButton limitSwitch {'A'};
     Potentiometer pot {'B'};
     int i = 0;
-    // controller.setText(0, 0, "hello");
-    // remapRange(pot.get(), 1760, 3350, 0, 266)
-    presetMotors::lift.moveManual(-MAX_VOLTAGE);
-    while (!limitSwitch.isPressed()) {
-        pros::Task::delay(10);
-    }
-    robot::lift.tarePosition();
-    presetMotors::lift.movePreset(-50, GREEN_RPM);
-    pros::Task::delay(100);
+    // presetMotors::lift.moveManual(-MAX_VOLTAGE);
+    // while (!limitSwitch.isPressed()) {
+    //     pros::Task::delay(10);
+    // }
+    // robot::lift.tarePosition();
+    // presetMotors::lift.movePreset(-50, GREEN_RPM);
+    pros::Task::delay(500);
     double intakePos = remapRange(pot.get(), 3350, 1760, 0, 266);
     printf("%f\n", intakePos);
     robot::intake.set_zero_position(intakePos);
-    // bool intakePreset = true;
-    // auto intakeController = AsyncControllerFactory::posPID(robot::intake, pot, -0.006636, 0.342856, 0.211047);
-    // auto intakeController = AsyncControllerFactory::posPID(robot::intake, pot, -0.01, -0.835209, -0.826340);
-    // auto intakeController = AsyncControllerFactory::posPID(robot::intake, pot, -0.0015, 0, -1);
-    // intakeController.flipDisable(true);
-    // auto tuner = PIDTunerFactory::create(std::make_shared<Potentiometer>(pot), std::make_shared<Motor>(robot::intake), 1_s, 3350, -0.01, 0, -1, 0, -1, 0);
     while (true) {
         robot::drive.tank(
             controller.getAnalog(ControllerAnalog::leftY),
             controller.getAnalog(ControllerAnalog::rightY));
+
+        // if (buttons::manualLiftUp.isPressed()) {
+        //     presetMotors::lift.moveManual(MAX_VOLTAGE);
+        // } else if (buttons::manualLiftDown.isPressed()) {
+        //     presetMotors::lift.moveManual(-MAX_VOLTAGE);
+        // }
+
         if (buttons::groundPickup.isPressed()) {
             presetMotors::lift.movePreset(-50, GREEN_RPM);
             presetMotors::intake.movePreset(-30, RED_RPM);
         } else if (buttons::lowPoleDelivery.isPressed()) {
             presetMotors::lift.movePreset(600, GREEN_RPM);
-            presetMotors::intake.movePreset(-30, RED_RPM / 4);
+            presetMotors::intake.movePreset(-30, RED_RPM);
         } else if (buttons::highPoleDelivery.isPressed()) {
             presetMotors::lift.movePreset(750, GREEN_RPM);
-            presetMotors::intake.movePreset(70, RED_RPM / 4);
+            presetMotors::intake.movePreset(70, RED_RPM);
         } else if (buttons::lowPolePickup.isPressed()) {
             presetMotors::lift.movePreset(300, GREEN_RPM);
-            presetMotors::intake.movePreset(0, RED_RPM / 4);
+            presetMotors::intake.movePreset(0, RED_RPM);
         } else if (buttons::highPolePickup.isPressed()) {
             presetMotors::lift.movePreset(500, GREEN_RPM);
-            presetMotors::intake.movePreset(0, RED_RPM / 4);
+            presetMotors::intake.movePreset(0, RED_RPM);
         }
         if (buttons::manualLiftUp.isPressed()) {
             presetMotors::lift.moveManual(MAX_VOLTAGE);
@@ -122,52 +135,15 @@ void opcontrol() {
         } else if (!presetMotors::intake.presetActive()) {
             presetMotors::intake.moveManual(0);
         }
-        // if (buttons::manualIntakeIn.isPressed()) {
-        //     robot::intake.moveVoltage(MAX_VOLTAGE);
-        //     intakePreset = false;
-        // } else if (buttons::manualIntakeOut.isPressed()) {
-        //     robot::intake.moveVoltage(-MAX_VOLTAGE);
-        //     intakePreset = false;
+        // if (limitSwitch.isPressed()) {
+        //     robot::lift.tarePosition();
         // }
-        // else if (buttons::intakeFlat.isPressed()) {
-        //     intakeController.flipDisable(false);
-        //     intakeController.setTarget(3350);
-        //     // auto output = tuner.autotune();
-        //     // printf("%f\t%f\t%f\n", output.kP, output.kI, output.kD);
-        // }
-        // else {
-        //     intakeController.flipDisable(true);
-        //     robot::intake.moveVoltage(0);
-        //     intakePreset = false;
-        // }
-        if (limitSwitch.isPressed()) {
-            robot::lift.tarePosition();
-        }
-        // if (buttons::manualLiftUp.isPressed() && liftTarget < 800) {
-        //     liftTarget += 10;
-        // }
-        // if (buttons::manualLiftDown.isPressed() && liftTarget > -200) {
-        //     liftTarget -= 10;
-        // }
-        // robot::lift.moveAbsolute(liftTarget, 200);
-        // if (controller.getDigital(ControllerDigital::A)) {
-        //     robot::lift.moveAbsolute(-200, 200);
-        // } else {
-            // robot::lift.moveVoltage(
-            //     buttons::manualLiftUp.isPressed() ? 12000 :
-            //     buttons::manualLiftDown.isPressed() ? -12000 :
-            //     0);
-        // }
-        // robot::intake.moveVoltage(
-        //     buttons::manualIntakeIn.isPressed() ? 12000 :
-        //     buttons::manualIntakeOut.isPressed() ? -12000 :
-        //     0);
         if (i == 200) {
             // controller.setText(0, 0, std::to_string(robot::lift.getFaults()));
             controller.setText(0, 0, std::to_string(robot::lift.getPosition()));
             i = 0;
         }
-        printf("%f %f %d %f %x\n", robot::lift.getPosition(), robot::intake.getPosition(), limitSwitch.isPressed(), pot.get(), robot::lift.getFaults());
+        printf("%f %f %f %x\n", robot::lift.getPosition(), robot::intake.getPosition(), pot.get(), robot::lift.getFaults());
         pros::Task::delay(10);
         i++;
     }
