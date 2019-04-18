@@ -8,143 +8,110 @@
 
 namespace teleop {
 
-    Controller controller;
+    Controller capController {ControllerId::master};
+    Controller ballController {ControllerId::partner};
 
     namespace buttons {
-        ControllerButton manualLiftUp(ControllerDigital::R1);
-        ControllerButton manualLiftDown(ControllerDigital::R2);
-        ControllerButton manualIntakeIn(ControllerDigital::L1);
-        ControllerButton manualIntakeOut(ControllerDigital::L2);
-        ControllerButton groundPickup(ControllerDigital::B);
-        ControllerButton lowPoleDelivery(ControllerDigital::A);
-        ControllerButton highPoleDelivery(ControllerDigital::X);
-        ControllerButton lowPolePickup(ControllerDigital::left);
-        ControllerButton highPolePickup(ControllerDigital::up);
-        ControllerButton intakeFlip(ControllerDigital::right);
-        ControllerButton intakeFlat(ControllerDigital::down);
+        ControllerButton manualLiftUp {ControllerId::master, ControllerDigital::R1};
+        ControllerButton manualLiftDown {ControllerId::master, ControllerDigital::R2};
+        ControllerButton manualCapIntakeIn {ControllerId::master, ControllerDigital::L1};
+        ControllerButton manualCapIntakeOut {ControllerId::master, ControllerDigital::L2};
+        ControllerButton groundPickup {ControllerId::master, ControllerDigital::B};
+        ControllerButton lowPoleDelivery {ControllerId::master, ControllerDigital::A};
+        ControllerButton highPoleDelivery {ControllerId::master, ControllerDigital::X};
+        ControllerButton lowPolePickup {ControllerId::master, ControllerDigital::left};
+        ControllerButton highPolePickup {ControllerId::master, ControllerDigital::up};
+        ControllerButton capIntakeFlip {ControllerId::master, ControllerDigital::right};
+        ControllerButton capIntakeFlat {ControllerId::master, ControllerDigital::down};
+        ControllerButton shoot {ControllerId::partner, ControllerDigital::R1};
+        ControllerButton ballIntakeIn {ControllerId::partner, ControllerDigital::L1};
+        ControllerButton ballIntakeOut {ControllerId::partner, ControllerDigital::L2};
     }
 
-    namespace presetMotors {
-        PresetMotor lift {robot::lift};
-        PresetMotor intake {robot::intake};
-    }
-
-    template<std::size_t P, std::size_t M>
-    auto makePresetRunner(ControlMap<P> presetControls,
-    ControlMap<M> manualControls, std::function<void()> manualDefault) {
-        return [=, presetActive = false]() mutable {
-            if (controlMap::run(manualControls)) {
-                presetActive = false;
-            } else if (controlMap::run(presetControls)) {
-                presetActive = true;
-            } else if (!presetActive) {
-                manualDefault();
-            }
-        };
-    }
-
-    
-
-    // auto runLift = makePresetRunner({
-    //     {buttons::groundPickup, [] {
-    //         robot::lift.moveAbsolute(-50, GREEN_RPM);
-    //         robot::intake.moveAbsolute(-30, RED_RPM);
-    //     }},
-    //     {buttons::lowPoleDelivery, [] {
-    //         robot::lift.moveAbsolute(600, GREEN_RPM);
-    //         robot::intake.moveAbsolute(-30, RED_RPM / 2);
-    //     }},
-    //     {buttons::highPoleDelivery, [] {
-    //         robot::lift.moveAbsolute(750, GREEN_RPM);
-    //         robot::intake.moveAbsolute(70, RED_RPM / 2);
-    //     }},
-    //     {buttons::lowPolePickup, [] {
-    //         robot::lift.moveAbsolute(300, GREEN_RPM);
-    //         robot::intake.moveAbsolute(0, RED_RPM / 2);
-    //     }},
-    //     {buttons::highPolePickup, [] {
-    //         robot::lift.moveAbsolute(500, GREEN_RPM);
-    //         robot::intake.moveAbsolute(0, RED_RPM / 2);
-    //     }}
-    // }, {
-    //     {buttons::manualLiftUp, [] {
-
-    //     }}
-    // })
+    // namespace presetMotors {
+    //     PresetMotor lift {robot::lift};
+    //     PresetMotor capIntake {robot::capIntake};
+    // }
 
 }
 
 void opcontrol() {
     using namespace teleop;
-    // ADIButton limitSwitch {'A'};
-    Potentiometer pot {'B'};
-    int i = 0;
+    // ADIButton leftLiftLimitSwitch {'G'};
+    // ADIButton rightLiftLimitSwitch {'H'};
+    // Potentiometer capIntakePotentiometer {'F'};
+    // ADIButton guideLimitSwitch {'E'};
+    // int i = 0;
     // presetMotors::lift.moveManual(-MAX_VOLTAGE);
-    // while (!limitSwitch.isPressed()) {
+    // while (!(leftLiftLimitSwitch.isPressed() && rightLiftLimitSwitch.isPressed())) {
     //     pros::Task::delay(10);
     // }
     // robot::lift.tarePosition();
-    // presetMotors::lift.movePreset(-50, GREEN_RPM);
-    pros::Task::delay(500);
-    double intakePos = remapRange(pot.get(), 3350, 1760, 0, 266);
-    printf("%f\n", intakePos);
-    robot::intake.set_zero_position(intakePos);
-    while (true) {
-        robot::drive.tank(
-            controller.getAnalog(ControllerAnalog::leftY),
-            controller.getAnalog(ControllerAnalog::rightY));
+    // presetMotors::lift.movePreset(0, GREEN_RPM);
+    // pros::Task::delay(500);
+    // robot::capIntake.set_zero_position(remapRange(capIntakePotentiometer.get(), 2600, 1070, 0, 265));
+    // while (true) {
+    //     robot::drive.tank(
+    //         capController.getAnalog(ControllerAnalog::leftY),
+    //         capController.getAnalog(ControllerAnalog::rightY));
 
-        // if (buttons::manualLiftUp.isPressed()) {
-        //     presetMotors::lift.moveManual(MAX_VOLTAGE);
-        // } else if (buttons::manualLiftDown.isPressed()) {
-        //     presetMotors::lift.moveManual(-MAX_VOLTAGE);
-        // }
-
-        if (buttons::groundPickup.isPressed()) {
-            presetMotors::lift.movePreset(-50, GREEN_RPM);
-            presetMotors::intake.movePreset(-30, RED_RPM);
-        } else if (buttons::lowPoleDelivery.isPressed()) {
-            presetMotors::lift.movePreset(600, GREEN_RPM);
-            presetMotors::intake.movePreset(-30, RED_RPM);
-        } else if (buttons::highPoleDelivery.isPressed()) {
-            presetMotors::lift.movePreset(750, GREEN_RPM);
-            presetMotors::intake.movePreset(70, RED_RPM);
-        } else if (buttons::lowPolePickup.isPressed()) {
-            presetMotors::lift.movePreset(300, GREEN_RPM);
-            presetMotors::intake.movePreset(0, RED_RPM);
-        } else if (buttons::highPolePickup.isPressed()) {
-            presetMotors::lift.movePreset(500, GREEN_RPM);
-            presetMotors::intake.movePreset(0, RED_RPM);
-        }
-        if (buttons::manualLiftUp.isPressed()) {
-            presetMotors::lift.moveManual(MAX_VOLTAGE);
-        } else if (buttons::manualLiftDown.isPressed()) {
-            presetMotors::lift.moveManual(-MAX_VOLTAGE);
-        } else if (!presetMotors::lift.presetActive()) {
-            presetMotors::lift.moveManual(0);
-        }
-        if (buttons::intakeFlip.isPressed()) {
-            presetMotors::intake.movePreset(300, RED_RPM);
-        } else if (buttons::intakeFlat.isPressed()) {
-            presetMotors::intake.movePreset(0, RED_RPM);
-        }
-        if (buttons::manualIntakeIn.isPressed()) {
-            presetMotors::intake.moveManual(MAX_VOLTAGE);
-        } else if (buttons::manualIntakeOut.isPressed()) {
-            presetMotors::intake.moveManual(-MAX_VOLTAGE);
-        } else if (!presetMotors::intake.presetActive()) {
-            presetMotors::intake.moveManual(0);
-        }
-        // if (limitSwitch.isPressed()) {
-        //     robot::lift.tarePosition();
-        // }
-        if (i == 200) {
-            // controller.setText(0, 0, std::to_string(robot::lift.getFaults()));
-            controller.setText(0, 0, std::to_string(robot::lift.getPosition()));
-            i = 0;
-        }
-        printf("%f %f %f %x\n", robot::lift.getPosition(), robot::intake.getPosition(), pot.get(), robot::lift.getFaults());
-        pros::Task::delay(10);
-        i++;
-    }
+    //     if (buttons::groundPickup.isPressed()) {
+    //         presetMotors::lift.movePreset(-50, RED_RPM);
+    //         presetMotors::capIntake.movePreset(-30, RED_RPM);
+    //     } else if (buttons::lowPoleDelivery.isPressed()) {
+    //         presetMotors::lift.movePreset(600, RED_RPM);
+    //         presetMotors::capIntake.movePreset(-30, RED_RPM);
+    //     } else if (buttons::highPoleDelivery.isPressed()) {
+    //         presetMotors::lift.movePreset(750, RED_RPM);
+    //         presetMotors::capIntake.movePreset(70, RED_RPM);
+    //     } else if (buttons::lowPolePickup.isPressed()) {
+    //         presetMotors::lift.movePreset(300, RED_RPM);
+    //         presetMotors::capIntake.movePreset(0, RED_RPM);
+    //     } else if (buttons::highPolePickup.isPressed()) {
+    //         presetMotors::lift.movePreset(500, RED_RPM);
+    //         presetMotors::capIntake.movePreset(0, RED_RPM);
+    //     }
+    //     if (buttons::manualLiftUp.isPressed()) {
+    //         presetMotors::lift.moveManual(MAX_VOLTAGE);
+    //     } else if (buttons::manualLiftDown.isPressed()) {
+    //         presetMotors::lift.moveManual(-MAX_VOLTAGE);
+    //     } else if (!presetMotors::lift.presetActive()) {
+    //         presetMotors::lift.moveManual(0);
+    //     }
+    //     if (buttons::capIntakeFlip.isPressed()) {
+    //         presetMotors::capIntake.movePreset(300, RED_RPM);
+    //     } else if (buttons::capIntakeFlat.isPressed()) {
+    //         presetMotors::capIntake.movePreset(0, RED_RPM);
+    //     }
+    //     if (buttons::manualCapIntakeIn.isPressed()) {
+    //         presetMotors::capIntake.moveManual(MAX_VOLTAGE);
+    //     } else if (buttons::manualCapIntakeOut.isPressed()) {
+    //         presetMotors::capIntake.moveManual(-MAX_VOLTAGE);
+    //     } else if (!presetMotors::capIntake.presetActive()) {
+    //         presetMotors::capIntake.moveManual(0);
+    //     }
+    //     if (buttons::ballIntakeIn.isPressed()) {
+    //         robot::ballIntake.moveVoltage(MAX_VOLTAGE);
+    //     } else if (buttons::ballIntakeOut.isPressed()) {
+    //         robot::ballIntake.moveVoltage(-MAX_VOLTAGE);
+    //     } else {
+    //         robot::ballIntake.moveVoltage(0);
+    //     }
+    //     if (buttons::shoot.isPressed()) {
+    //         robot::shooter.moveVoltage(MAX_VOLTAGE);
+    //     } else {
+    //         robot::shooter.moveVoltage(0);
+    //     }
+    //     if (leftLiftLimitSwitch.isPressed() && rightLiftLimitSwitch.isPressed()) {
+    //         robot::lift.tarePosition();
+    //     }
+    //     if (i == 200) {
+    //         // controller.setText(0, 0, std::to_string(robot::lift.getFaults()));
+    //         capController.setText(0, 0, std::to_string(robot::lift.getPosition()));
+    //         i = 0;
+    //     }
+    //     // printf("%f %f %f\n", robot::lift.getPosition(), robot::capIntake.getPosition(), capIntakePotentiometer.get());
+    //     pros::Task::delay(10);
+    //     i++;
+    // }
 }

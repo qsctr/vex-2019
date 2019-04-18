@@ -4,11 +4,36 @@
 
 namespace robot {
 
-    extern MotorGroup baseLeft;
-    extern MotorGroup baseRight;
-    extern ChassisControllerIntegrated drive;
-    extern MotorGroup lift;
-    extern Motor intake;
+    namespace drive {
+        extern MotorGroup left;
+        extern MotorGroup right;
+        extern ChassisControllerIntegrated controller;
+    }
+
+    namespace lift {
+        extern Motor motor;
+        extern AsyncPosIntegratedController controller;
+        extern ADIButton leftLimitSwitch;
+        extern ADIButton rightLimitSwitch;
+    }
+
+    namespace capIntake {
+        extern Motor motor;
+        extern AsyncPosIntegratedController controller;
+        extern Potentiometer potentiometer;
+    }
+
+    namespace guide {
+        extern ADIButton limitSwitch;
+    }
+
+    namespace shooter {
+        extern Motor motor;
+    }
+
+    namespace ballIntake {
+        extern Motor motor;
+    }
 
     void setup();
 

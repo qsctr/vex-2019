@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "PROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "C:\\Program Files\\PROS\\toolchain\\usr\\lib\\gcc\\arm-none-eabi\\7.2.1\\cc1plus.exe",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "C:\\Program Files\\PROS\\toolchain\\usr\\arm-none-eabi\\include\\**\\c++\\7.2.1\\tr1",
+                "C:\\Program Files\\PROS\\toolchain\\usr\\arm-none-eabi\\include\\**",
+                "C:\\Program Files\\PROS\\toolchain\\usr\\lib\\gcc\\arm-none-eabi\\7.2.1\\include"
+            ],
+            "defines": [
+                "__SIZE_TYPE__=long long unsigned int"
+            ],
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

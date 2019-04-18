@@ -11,6 +11,7 @@ namespace teleop {
         PresetMotor(AbstractMotor& motor);
         bool presetActive();
         void movePreset(double position, int32_t velocity);
+        void movePreset(double position, int32_t velocity, std::function<void()> onSettled);
         void moveManual(int16_t voltage);
     };
 
