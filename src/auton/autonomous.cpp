@@ -3,11 +3,6 @@
 #include "robot.hpp"
 
 void autonomous() {
-    auto profileController = AsyncControllerFactory::motionProfile(0.3, 0.6, 3, robot::drive::controller);
-    profileController.generatePath({
-        Point {0_cm, 0_cm, 0_deg},
-        Point {23_cm, -9_cm, -60_deg}
-    }, "toPole");
     robot::lift::motor.moveVoltage(-MAX_VOLTAGE);
     while (!(robot::lift::leftLimitSwitch.isPressed() &&
     robot::lift::rightLimitSwitch.isPressed())) {
