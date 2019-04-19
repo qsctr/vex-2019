@@ -5,25 +5,57 @@
 namespace teleop {
 
     MultiController::MultiController(AbstractMotor& motor,
-    AsyncPosIntegratedController posController) :
+    AsyncPosIntegratedController& posController) :
         motor {motor},
         posController {posController},
-        maxVelocity {toUnderlyingType(motor.getGearing())}
+        maxVelocity {toUnderlyingType(motor.getGearing())},
+        presetActive {false}
         {}
 
-    void MultiController::movePreset(double position, double velocityScale) {
+    void MultiController::setPreset(double position, double velocityScale) {
         posController.setMaxVelocity(maxVelocity * velocityScale);
-        state = std::make_pair(position, std::nullopt);
+        posController.setTarget(position);
+        if (!presetActive) {
+            posController.flipDisable(false);
+        }
+        presetActive = true;
     }
 
-    void MultiController::moveManual(double voltageScale) {
-        state = MAX_VOLTAGE * voltageScale;
+    void MultiController::movePreset(double position, double velocityScale) {
+        setPreset(position, velocityScale);
+        onSettled = std::nullopt;
+    }
+
+    void MultiController::movePreset(double position,
+    std::function<void()> cb) {
+        movePreset(position, 1, cb);
+    }
+
+    void MultiController::movePreset(double position, double velocityScale,
+    std::function<void()> cb) {
+        setPreset(position, velocityScale);
+        onSettled = cb;
+    }
+
+    void MultiController::moveManualOverride(double voltageScale) {
+        if (presetActive) {
+            posController.flipDisable(true);
+        }
+        motor.moveVoltage(MAX_VOLTAGE * voltageScale);
+        presetActive = false;
+    }
+
+    void MultiController::moveManualDefault(double voltageScale) {
+        if (!presetActive) {
+            moveManualOverride(voltageScale);
+        }
     }
 
     void MultiController::update() {
-        std::visit((struct {
-
-        } {}), state);
+        if (presetActive && onSettled && posController.isSettled()) {
+            auto onSettledCopy = onSettled.value();
+            onSettledCopy();
+        }
     }
 
 }

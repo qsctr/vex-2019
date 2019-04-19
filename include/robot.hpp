@@ -5,8 +5,6 @@
 namespace robot {
 
     namespace drive {
-        extern MotorGroup left;
-        extern MotorGroup right;
         extern ChassisControllerIntegrated controller;
     }
 

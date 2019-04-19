@@ -1,8 +1,4 @@
 #include <cstdint>
-#include <functional>
-#include <optional>
-#include <utility>
-#include <variant>
 #include "main.h"
 
 namespace teleop {
@@ -11,12 +7,18 @@ namespace teleop {
         AbstractMotor& motor;
         AsyncPosIntegratedController& posController;
         int32_t maxVelocity;
-        std::variant<short, std::pair<double, std::optional<std::function<void()>>>> state;
+        bool presetActive;
+        std::optional<std::function<void()>> onSettled;
+        void setPreset(double position, double velocityScale);
     public:
         MultiController(AbstractMotor& motor,
-            AsyncPosIntegratedController posController);
-        void movePreset(double position, double velocityScale);
-        void moveManual(double voltageScale);
+            AsyncPosIntegratedController& posController);
+        void movePreset(double position, double velocityScale = 1);
+        void movePreset(double position, std::function<void()> onSettled);
+        void movePreset(double position, double velocityScale,
+        std::function<void()> onSettled);
+        void moveManualOverride(double voltageScale);
+        void moveManualDefault(double voltageScale);
         void update();
     };
 

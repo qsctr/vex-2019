@@ -5,10 +5,8 @@
 namespace robot {
 
     namespace drive {
-        MotorGroup baseLeft {3, 20};
-        MotorGroup baseRight {-2, -12};
         ChassisControllerIntegrated controller =
-            ChassisControllerFactory::create(baseLeft, baseRight,
+            ChassisControllerFactory::create({3, 20}, {-2, -12},
                 AbstractMotor::gearset::green, {4.25_in, 14_in});
     }
 
@@ -25,8 +23,8 @@ namespace robot {
         AsyncPosIntegratedController controller =
             AsyncControllerFactory::posIntegrated(motor, RED_RPM);
         Potentiometer potentiometer {'F'};
-        const double FLAT_POTENTIOMETER_VALUE = 2600;
-        const double VERTICAL_POTENTIOMETER_VALUE = 1070;
+        const double FLAT_POTENTIOMETER_VALUE = 2500;
+        const double VERTICAL_POTENTIOMETER_VALUE = 970;
         const double FLAT_ENCODER_DEGREES = 0;
         const double VERTICAL_ENCODER_DEGREES = 265;
         static void reset() {
@@ -49,8 +47,7 @@ namespace robot {
     }
 
     void setup() {
-        drive::left.setBrakeMode(AbstractMotor::brakeMode::brake);
-        drive::right.setBrakeMode(AbstractMotor::brakeMode::brake);
+        drive::controller.setBrakeMode(AbstractMotor::brakeMode::brake);
         lift::motor.setGearing(AbstractMotor::gearset::red);
         lift::motor.setBrakeMode(AbstractMotor::brakeMode::brake);
         capIntake::motor.setGearing(AbstractMotor::gearset::red);
