@@ -3,48 +3,58 @@
 #include "robot.hpp"
 
 void autonomous() {
+    uint32_t startingTime = pros::millis();
     robot::lift::motor.moveVoltage(-MAX_VOLTAGE);
-    while (!(robot::lift::leftLimitSwitch.isPressed() &&
-    robot::lift::rightLimitSwitch.isPressed())) {
+    while (!robot::lift::rightLimitSwitch.isPressed()) {
         pros::Task::delay(10);
     }
     robot::lift::motor.tarePosition();
-    robot::lift::controller.setTarget(50);
+    robot::lift::controller.setTarget(100);
     robot::lift::controller.waitUntilSettled();
     robot::ballIntake::motor.moveVoltage(-MAX_VOLTAGE);
-    pros::Task::delay(200);
+    robot::shooter::motor.moveVoltage(MAX_VOLTAGE);
+    pros::delay(700);
     robot::ballIntake::motor.moveVoltage(MAX_VOLTAGE);
+    robot::shooter::motor.moveVoltage(0);
+    robot::drive::controller.turnAngle(-90_deg);
     robot::drive::controller.moveDistance(-100_cm);
     robot::lift::controller.setTarget(0);
-    robot::capIntake::controller.setTarget(-35);
-    pros::Task::delay(100);
+    robot::capIntake::controller.setTarget(-30);
+    // pros::Task::delay(100);
     robot::drive::controller.moveDistance(50_cm);
-    robot::ballIntake::motor.moveVoltage(0);
     robot::drive::controller.turnAngle(130_deg);
     robot::capIntake::controller.waitUntilSettled();
     robot::drive::controller.moveDistance(60_cm);
     robot::capIntake::controller.setTarget(300);
-    robot::capIntake::controller.waitUntilSettled();
-    robot::drive::controller.moveDistance(-60_cm);
-    robot::drive::controller.turnAngle(-50_deg);
+    while (robot::capIntake::motor.getPosition() < 50) {
+        pros::Task::delay(10);
+    }
     robot::lift::controller.setTarget(650);
-    robot::lift::controller.waitUntilSettled();
-    // robot::capIntake::controller.setTarget(-10);
-    robot::drive::controller.setMaxVelocity(GREEN_RPM / 2);
-    robot::drive::controller.moveDistance(60_cm);
-    robot::drive::controller.forward(0.3);
+    robot::drive::controller.moveDistance(-32_cm);
+    robot::capIntake::controller.setTarget(-20);
+    robot::drive::controller.turnAngle(-61_deg);
+    // robot::lift::controller.waitUntilSettled();
+    robot::capIntake::controller.waitUntilSettled();
+    robot::drive::controller.forward(1);
     while (!robot::guide::limitSwitch.isPressed()) {
         pros::Task::delay(10);
     }
-    // // robot::capIntake::controller.waitUntilSettled();
     robot::drive::controller.stop();
-    pros::Task::delay(1000);
-    robot::capIntake::controller.setMaxVelocity(RED_RPM / 2);
-    robot::capIntake::controller.setTarget(-20);
-    robot::capIntake::controller.waitUntilSettled();
-    robot::lift::controller.setMaxVelocity(RED_RPM / 2);
+    robot::shooter::motor.moveVoltage(MAX_VOLTAGE);
+    // robot::capIntake::controller.waitUntilSettled();
+    // robot::capIntake::controller.setTarget(-20);
+    // robot::capIntake::controller.waitUntilSettled();
+    // robot::capIntake::controller.setMaxVelocity(RED_RPM / 2);
+    // robot::lift::controller.setMaxVelocity(RED_RPM / 2);
     robot::lift::controller.setTarget(400);
     robot::lift::controller.waitUntilSettled();
+    robot::shooter::motor.moveVoltage(0);
+    robot::ballIntake::motor.moveVoltage(0);
+    uint32_t totalTime = pros::millis() - startingTime;
+    while (true) {
+        printf("%u\n", totalTime);
+        pros::delay(10);
+    }
 
     // robot::drive::controller.turnAngle(-134_deg);
     // robot::lift::controller.setTarget(650);
