@@ -1,9 +1,7 @@
 #include "main.h"
 #include "constants.hpp"
 #include "robot.hpp"
-#include "teleop/controlMap.hpp"
 #include "teleop/multiController.hpp"
-#include "teleop/presetMotor.hpp"
 
 #include <cstdio>
 
@@ -49,11 +47,6 @@ namespace teleop {
         MultiController capIntake {robot::capIntake::motor,
             robot::capIntake::controller};
     }
-
-    // namespace presetMotors {
-    //     PresetMotor lift {robot::lift};
-    //     PresetMotor capIntake {robot::capIntake};
-    // }
 
     constexpr bool analogActive(float leftAnalog, float rightAnalog) {
         return abs(leftAnalog) > ANALOG_DEADBAND
