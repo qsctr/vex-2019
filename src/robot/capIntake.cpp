@@ -3,10 +3,8 @@
 
 constexpr auto gearing = AbstractMotor::gearset::red;
 
-constexpr double FLAT_POTENTIOMETER_VALUE = 2500;
-constexpr double VERTICAL_POTENTIOMETER_VALUE = 970;
-constexpr double FLAT_ENCODER_DEGREES = 0;
-constexpr double VERTICAL_ENCODER_DEGREES = 265;
+constexpr double flatPotentiometerValue = 2500;
+constexpr double verticalPotentiometerValue = 970;
 
 namespace robot::capIntake {
 
@@ -22,8 +20,8 @@ namespace robot::capIntake {
 
     void resetPosition() {
         motor.set_zero_position(remapRange(potentiometer.get(),
-            FLAT_POTENTIOMETER_VALUE, VERTICAL_POTENTIOMETER_VALUE,
-            FLAT_ENCODER_DEGREES, VERTICAL_ENCODER_DEGREES));
+            flatPotentiometerValue, verticalPotentiometerValue,
+            positions::flat, positions::vertical));
     }
 
 }
