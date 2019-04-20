@@ -61,22 +61,31 @@ namespace teleop {
     void highPoleFlip2() { multiControllers::capIntake.movePreset(70, 0.5, highPoleFlip3); }
     void highPoleFlip() { multiControllers::capIntake.movePreset(300, highPoleFlip2); }
 
+    std::optional<double> getSideDrivePower(float analog,
+    ControllerButton adjustForward, ControllerButton adjustBackward) {
+        if (abs(analog) > ANALOG_DEADBAND)
+            return analog;
+        if (adjustForward.isPressed())
+            return 0.2;
+        if (adjustBackward.isPressed())
+            return -0.2;
+        return std::nullopt;
+    }
+
     std::pair<double, double> getDrivePower() {
         float capLeft = capController.getAnalog(ControllerAnalog::leftY);
         float capRight = capController.getAnalog(ControllerAnalog::rightY);
         float ballLeft = ballController.getAnalog(ControllerAnalog::leftY);
         float ballRight = ballController.getAnalog(ControllerAnalog::rightY);
         if (!analogActive(capLeft, capRight)) {
-            if (analogActive(ballLeft, ballRight))
-                return {-ballRight, -ballLeft};
-            if (buttons::ballRightDriveAdjustForward.isPressed())
-                return {-0.2, 0};
-            if (buttons::ballRightDriveAdjustBackward.isPressed())
-                return {0.2, 0};
-            if (buttons::ballLeftDriveAdjustForward.isPressed())
-                return {0, -0.2};
-            if (buttons::ballLeftDriveAdjustBackward.isPressed())
-                return {0, 0.2};
+            auto leftPower = getSideDrivePower(ballLeft,
+                buttons::ballLeftDriveAdjustForward,
+                buttons::ballLeftDriveAdjustBackward);
+            auto rightPower = getSideDrivePower(ballRight,
+                buttons::ballRightDriveAdjustForward,
+                buttons::ballRightDriveAdjustBackward);
+            if (leftPower || rightPower)
+                return {-rightPower.value_or(0), -leftPower.value_or(0)};
         }
         return {capLeft, capRight};
     }
