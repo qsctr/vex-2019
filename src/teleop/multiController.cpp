@@ -52,8 +52,9 @@ namespace teleop {
 
     void MultiController::update() {
         if (!posController.isDisabled() && onSettled && posController.isSettled()) {
-            auto onSettledCopy = onSettled.value();
-            onSettledCopy();
+            auto cb = onSettled.value();
+            onSettled = std::nullopt;
+            cb();
         }
     }
 
