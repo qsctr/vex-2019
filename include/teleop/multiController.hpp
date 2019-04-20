@@ -7,7 +7,6 @@ namespace teleop {
         AbstractMotor& motor;
         AsyncPosIntegratedController& posController;
         int32_t maxVelocity;
-        bool presetActive;
         std::optional<std::function<void()>> onSettled;
         void setPreset(double position, double velocityScale);
     public:

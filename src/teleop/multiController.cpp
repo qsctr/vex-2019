@@ -8,17 +8,17 @@ namespace teleop {
     AsyncPosIntegratedController& posController) :
         motor {motor},
         posController {posController},
-        maxVelocity {toUnderlyingType(motor.getGearing())},
-        presetActive {false}
-        {}
+        maxVelocity {toUnderlyingType(motor.getGearing())}
+    {
+        posController.flipDisable(true);
+    }
 
     void MultiController::setPreset(double position, double velocityScale) {
         posController.setMaxVelocity(maxVelocity * velocityScale);
         posController.setTarget(position);
-        if (!presetActive) {
+        if (posController.isDisabled()) {
             posController.flipDisable(false);
         }
-        presetActive = true;
     }
 
     void MultiController::movePreset(double position, double velocityScale) {
@@ -38,21 +38,20 @@ namespace teleop {
     }
 
     void MultiController::moveManualOverride(double voltageScale) {
-        if (presetActive) {
+        if (!posController.isDisabled()) {
             posController.flipDisable(true);
         }
         motor.moveVoltage(MAX_VOLTAGE * voltageScale);
-        presetActive = false;
     }
 
     void MultiController::moveManualDefault(double voltageScale) {
-        if (!presetActive) {
+        if (posController.isDisabled()) {
             moveManualOverride(voltageScale);
         }
     }
 
     void MultiController::update() {
-        if (presetActive && onSettled && posController.isSettled()) {
+        if (!posController.isDisabled() && onSettled && posController.isSettled()) {
             auto onSettledCopy = onSettled.value();
             onSettledCopy();
         }
