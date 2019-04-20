@@ -1,8 +1,15 @@
 #include "main.h"
+#include "constants.hpp"
 #include "robot.hpp"
 
 void initialize() {
-    robot::setup();
+    robot::drive::initialize();
+    robot::lift::initialize();
+    robot::capIntake::initialize();
+    robot::shooter::initialize();
+    robot::ballIntake::initialize();
+    pros::Task::delay(SENSOR_INITIALIZATION_TIME);
+    robot::capIntake::resetPosition();
 }
 
 void competition_initialize() {}

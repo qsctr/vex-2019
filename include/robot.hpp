@@ -1,38 +1,8 @@
 #pragma once
 
-#include "main.h"
-
-namespace robot {
-
-    namespace drive {
-        extern ChassisControllerIntegrated controller;
-    }
-
-    namespace lift {
-        extern Motor motor;
-        extern AsyncPosIntegratedController controller;
-        extern ADIButton leftLimitSwitch;
-        extern ADIButton rightLimitSwitch;
-    }
-
-    namespace capIntake {
-        extern Motor motor;
-        extern AsyncPosIntegratedController controller;
-        extern Potentiometer potentiometer;
-    }
-
-    namespace guide {
-        extern ADIButton limitSwitch;
-    }
-
-    namespace shooter {
-        extern Motor motor;
-    }
-
-    namespace ballIntake {
-        extern Motor motor;
-    }
-
-    void setup();
-
-}
+#include "robot/ballIntake.hpp"
+#include "robot/capIntake.hpp"
+#include "robot/drive.hpp"
+#include "robot/guide.hpp"
+#include "robot/lift.hpp"
+#include "robot/shooter.hpp"
