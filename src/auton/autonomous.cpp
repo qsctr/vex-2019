@@ -5,7 +5,8 @@
 void autonomous() {
     uint32_t startingTime = pros::millis();
     robot::lift::motor.moveVoltage(-MAX_VOLTAGE);
-    while (!robot::lift::rightLimitSwitch.isPressed()) {
+    while (!(robot::lift::leftLimitSwitch.isPressed() &&
+    robot::lift::rightLimitSwitch.isPressed())) {
         pros::Task::delay(10);
     }
     robot::lift::motor.tarePosition();
