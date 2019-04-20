@@ -15,9 +15,9 @@ namespace teleop {
         MultiController(AbstractMotor& motor,
             AsyncPosIntegratedController& posController);
         void movePreset(double position, double velocityScale = 1);
-        void movePreset(double position, std::function<void()> onSettled);
+        void movePreset(double position, std::function<void()> cb);
         void movePreset(double position, double velocityScale,
-        std::function<void()> onSettled);
+        std::function<void()> cb);
         void moveManualOverride(double voltageScale);
         void moveManualDefault(double voltageScale);
         void update();
