@@ -19,5 +19,6 @@ namespace robot::lift {
     extern ADIButton rightLimitSwitch;
 
     void initialize();
+    void reset();
 
 }

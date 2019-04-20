@@ -94,13 +94,7 @@ namespace teleop {
 
 void opcontrol() {
     using namespace teleop;
-    multiControllers::lift.moveManualOverride(-1);
-    while (!(robot::lift::leftLimitSwitch.isPressed() &&
-    robot::lift::rightLimitSwitch.isPressed())) {
-        pros::Task::delay(10);
-    }
-    robot::lift::motor.tarePosition();
-    multiControllers::lift.moveManualDefault(0);
+    robot::lift::reset();
     int i = 0;
     while (true) {
         auto [leftDrivePower, rightDrivePower] = getDrivePower();
