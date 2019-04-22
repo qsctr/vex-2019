@@ -1,45 +1,18 @@
 #include "main.h"
 #include "constants.hpp"
 #include "robot.hpp"
+#include "teleop/controls.hpp"
 #include "teleop/multiController.hpp"
 
 #include <cstdio>
 
 namespace teleop {
 
-    constexpr auto CAP_CONTROLLER_ID {ControllerId::master};
-    constexpr auto BALL_CONTROLLER_ID {ControllerId::partner};
-
     constexpr float ANALOG_DEADBAND {0.05};
 
-    Controller capController {CAP_CONTROLLER_ID};
-    Controller ballController {BALL_CONTROLLER_ID};
-
-    namespace buttons {
-        ControllerButton
-            manualLiftUp {CAP_CONTROLLER_ID, ControllerDigital::R1},
-            manualLiftDown {CAP_CONTROLLER_ID, ControllerDigital::R2},
-            manualCapIntakeIn {CAP_CONTROLLER_ID, ControllerDigital::L1},
-            manualCapIntakeOut {CAP_CONTROLLER_ID, ControllerDigital::L2},
-            groundPickup {CAP_CONTROLLER_ID, ControllerDigital::B},
-            lowPoleDelivery {CAP_CONTROLLER_ID, ControllerDigital::A},
-            highPoleDelivery {CAP_CONTROLLER_ID, ControllerDigital::X},
-            lowPolePickup {CAP_CONTROLLER_ID, ControllerDigital::left},
-            highPolePickup {CAP_CONTROLLER_ID, ControllerDigital::up},
-            capFlip {CAP_CONTROLLER_ID, ControllerDigital::right},
-            capIntakeUp {CAP_CONTROLLER_ID, ControllerDigital::Y},
-            capIntakeFlat {CAP_CONTROLLER_ID, ControllerDigital::down},
-            ballRightDriveAdjustForward
-                {BALL_CONTROLLER_ID, ControllerDigital::X},
-            ballRightDriveAdjustBackward
-                {BALL_CONTROLLER_ID, ControllerDigital::B},
-            ballLeftDriveAdjustForward
-                {BALL_CONTROLLER_ID, ControllerDigital::up},
-            ballLeftDriveAdjustBackward
-                {BALL_CONTROLLER_ID, ControllerDigital::down},
-            shoot {BALL_CONTROLLER_ID, ControllerDigital::R1},
-            ballIntakeIn {BALL_CONTROLLER_ID, ControllerDigital::L1},
-            ballIntakeOut {BALL_CONTROLLER_ID, ControllerDigital::L2};
+    namespace controllers {
+        Controller cap {controllerIds::cap};
+        Controller ball {controllerIds::ball};
     }
 
     namespace multiControllers {
@@ -62,30 +35,32 @@ namespace teleop {
     void highPoleFlip() { multiControllers::capIntake.movePreset(300, highPoleFlip2); }
 
     std::optional<double> getSideDrivePower(float analog,
-    ControllerButton adjustForward, ControllerButton adjustBackward) {
+    ControllerButton adjustPositive, ControllerButton adjustNegative) {
         if (abs(analog) > ANALOG_DEADBAND)
             return analog;
-        if (adjustForward.isPressed())
+        if (adjustPositive.isPressed())
             return 0.2;
-        if (adjustBackward.isPressed())
+        if (adjustNegative.isPressed())
             return -0.2;
         return std::nullopt;
     }
 
     std::pair<double, double> getDrivePower() {
-        float capLeft = capController.getAnalog(ControllerAnalog::leftY);
-        float capRight = capController.getAnalog(ControllerAnalog::rightY);
-        float ballLeft = ballController.getAnalog(ControllerAnalog::leftY);
-        float ballRight = ballController.getAnalog(ControllerAnalog::rightY);
+        float capLeft = controllers::cap.getAnalog(controls::capDriveLeft);
+        float capRight = controllers::cap.getAnalog(controls::capDriveRight);
         if (!analogActive(capLeft, capRight)) {
-            auto leftPower = getSideDrivePower(ballLeft,
-                buttons::ballLeftDriveAdjustForward,
-                buttons::ballLeftDriveAdjustBackward);
-            auto rightPower = getSideDrivePower(ballRight,
-                buttons::ballRightDriveAdjustForward,
-                buttons::ballRightDriveAdjustBackward);
-            if (leftPower || rightPower)
-                return {-rightPower.value_or(0), -leftPower.value_or(0)};
+            float ballForward =
+                controllers::ball.getAnalog(controls::ballDriveForward);
+            float ballYaw =
+                controllers::ball.getAnalog(controls::ballDriveForward);
+            auto forwardPower = getSideDrivePower(ballForward,
+                controls::ballDriveAdjustForward,
+                controls::ballDriveAdjustBackward);
+            auto yawPower = getSideDrivePower(ballYaw,
+                controls::ballDriveAdjustRight,
+                controls::ballDriveAdjustLeft);
+            if (forwardPower || yawPower)
+                return {-forwardPower.value_or(0), yawPower.value_or(0)};
         }
         return {capLeft, capRight};
     }
@@ -99,22 +74,22 @@ void opcontrol() {
     while (true) {
         auto [leftDrivePower, rightDrivePower] = getDrivePower();
         robot::drive::controller.tank(leftDrivePower, rightDrivePower);
-        if (buttons::groundPickup.changedToPressed()) {
+        if (controls::groundPickup.changedToPressed()) {
             multiControllers::lift.movePreset(-50);
             multiControllers::capIntake.movePreset(-30);
-        } else if (buttons::lowPoleDelivery.changedToPressed()) {
+        } else if (controls::lowPoleDelivery.changedToPressed()) {
             multiControllers::lift.movePreset(650);
             multiControllers::capIntake.movePreset(-10);
-        } else if (buttons::highPoleDelivery.changedToPressed()) {
+        } else if (controls::highPoleDelivery.changedToPressed()) {
             multiControllers::lift.movePreset(750);
             multiControllers::capIntake.movePreset(70);
-        } else if (buttons::lowPolePickup.changedToPressed()) {
+        } else if (controls::lowPolePickup.changedToPressed()) {
             multiControllers::lift.movePreset(350);
             multiControllers::capIntake.movePreset(0);
-        } else if (buttons::highPolePickup.changedToPressed()) {
+        } else if (controls::highPolePickup.changedToPressed()) {
             multiControllers::lift.movePreset(500);
             multiControllers::capIntake.movePreset(0);
-        } else if (buttons::capFlip.changedToPressed()) {
+        } else if (controls::flipCap.changedToPressed()) {
             auto liftTarget = robot::lift::controller.getTarget();
             if (!robot::lift::controller.isDisabled() && liftTarget == 350) {
                 multiControllers::lift.movePreset(650, lowPoleFlip);
@@ -125,34 +100,34 @@ void opcontrol() {
                     multiControllers::capIntake.movePreset(0, 0.5);
                 });
             }
-        } else if (buttons::capIntakeUp.changedToPressed()) {
+        } else if (controls::capIntakeUp.changedToPressed()) {
             multiControllers::capIntake.movePreset(300);
-        } else if (buttons::capIntakeFlat.changedToPressed()) {
+        } else if (controls::capIntakeFlat.changedToPressed()) {
             multiControllers::capIntake.movePreset(0);
         } else {
-            if (buttons::manualLiftUp.isPressed()) {
+            if (controls::manualLiftUp.isPressed()) {
                 multiControllers::lift.moveManualOverride(1);
-            } else if (buttons::manualLiftDown.isPressed()) {
+            } else if (controls::manualLiftDown.isPressed()) {
                 multiControllers::lift.moveManualOverride(-1);
             } else {
                 multiControllers::lift.moveManualDefault(0);
             }
-            if (buttons::manualCapIntakeIn.isPressed()) {
+            if (controls::manualCapIntakeIn.isPressed()) {
                 multiControllers::capIntake.moveManualOverride(1);
-            } else if (buttons::manualCapIntakeOut.isPressed()) {
+            } else if (controls::manualCapIntakeOut.isPressed()) {
                 multiControllers::capIntake.moveManualOverride(-1);
             } else {
                 multiControllers::capIntake.moveManualDefault(0);
             }
         }
-        if (buttons::shoot.isPressed()) {
+        if (controls::shoot.isPressed()) {
             robot::shooter::motor.moveVoltage(MAX_VOLTAGE);
         } else {
             robot::shooter::motor.moveVoltage(0);
         }
-        if (buttons::ballIntakeIn.isPressed()) {
+        if (controls::ballIntakeIn.isPressed()) {
             robot::ballIntake::motor.moveVoltage(MAX_VOLTAGE);
-        } else if (buttons::ballIntakeOut.isPressed()) {
+        } else if (controls::ballIntakeOut.isPressed()) {
             robot::ballIntake::motor.moveVoltage(-MAX_VOLTAGE);
         } else {
             robot::ballIntake::motor.moveVoltage(0);
@@ -164,7 +139,7 @@ void opcontrol() {
         }
         printf("%f %f\n", robot::capIntake::motor.getPosition(), robot::capIntake::potentiometer.get());
         if (i == 100) {
-            capController.setText(0, 0, std::to_string(robot::capIntake::motor.getPosition()));
+            controllers::cap.setText(0, 0, std::to_string(robot::capIntake::motor.getPosition()));
             i = 0;
         }
         pros::Task::delay(10);
