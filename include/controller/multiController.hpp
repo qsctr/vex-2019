@@ -16,9 +16,9 @@ public:
     double getPosition();
     void movePosition(double position,
         double velocityScale = defaultVelocityScale);
-    void movePosition(double position, std::function<void()> cb);
+    void movePosition(double position, std::function<void()> settledCb);
     void movePosition(double position, double velocityScale,
-        std::function<void()> cb);
+        std::function<void()> settledCb);
     void moveVoltage(double voltageScale) override;
     void moveVoltageDefault(double voltageScale);
     void checkSettled();

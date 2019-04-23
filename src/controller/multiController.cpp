@@ -28,14 +28,15 @@ void MultiController::movePosition(double position, double velocityScale) {
     onSettled = std::nullopt;
 }
 
-void MultiController::movePosition(double position, std::function<void()> cb) {
-    movePosition(position, defaultVelocityScale, cb);
+void MultiController::movePosition(double position,
+std::function<void()> settledCb) {
+    movePosition(position, defaultVelocityScale, settledCb);
 }
 
 void MultiController::movePosition(double position, double velocityScale,
-std::function<void()> cb) {
+std::function<void()> settledCb) {
     setPosition(position, velocityScale);
-    onSettled = cb;
+    onSettled = settledCb;
 }
 
 void MultiController::moveVoltage(double voltageScale) {
@@ -54,9 +55,9 @@ void MultiController::moveVoltageDefault(double voltageScale) {
 void MultiController::checkSettled() {
     if (!posController->isDisabled() && onSettled
     && posController->isSettled()) {
-        auto cb = onSettled.value();
+        auto settledCb = onSettled.value();
         onSettled = std::nullopt;
-        cb();
+        settledCb();
     }
 }
 
