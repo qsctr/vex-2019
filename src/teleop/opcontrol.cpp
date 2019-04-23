@@ -38,7 +38,7 @@ namespace teleop {
         return std::nullopt;
     }
 
-    std::pair<double, double> getDrivePower() {
+    void drive() {
         float capLeft = controllers::cap.getAnalog(controls::capDriveLeft);
         float capRight = controllers::cap.getAnalog(controls::capDriveRight);
         if (!analogActive(capLeft, capRight)) {
@@ -52,10 +52,13 @@ namespace teleop {
             auto yawPower = getSideDrivePower(ballYaw,
                 controls::ballDriveAdjustRight,
                 controls::ballDriveAdjustLeft);
-            if (forwardPower || yawPower)
-                return {-forwardPower.value_or(0), yawPower.value_or(0)};
+            if (forwardPower || yawPower) {
+                robot::drive::controller.arcade(-forwardPower.value_or(0),
+                    yawPower.value_or(0));
+                return;
+            }
         }
-        return {capLeft, capRight};
+        robot::drive::controller.tank(capLeft, capRight);
     }
 
 }
@@ -65,8 +68,7 @@ void opcontrol() {
     robot::lift::reset();
     int i = 0;
     while (true) {
-        auto [leftDrivePower, rightDrivePower] = getDrivePower();
-        robot::drive::controller.tank(leftDrivePower, rightDrivePower);
+        drive();
         if (controls::groundPickup.changedToPressed()) {
             robot::lift::controller.movePosition(-50);
             robot::capIntake::controller.movePosition(-30);
