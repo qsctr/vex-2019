@@ -3,11 +3,7 @@
 
 namespace robot::shooter {
 
-    Motor motor {-1};
-
-    void initialize() {
-        motor.setGearing(AbstractMotor::gearset::red);
-        motor.setBrakeMode(AbstractMotor::brakeMode::brake);
-    }
+    VoltageController controller {std::make_shared<Motor>(-1),
+        AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
 
 }

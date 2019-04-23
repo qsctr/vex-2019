@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include "controller/multiController.hpp"
 
 namespace robot::lift {
 
@@ -13,12 +14,10 @@ namespace robot::lift {
         constexpr double highPolePickup = 500;
     }
 
-    extern Motor motor;
-    extern AsyncPosIntegratedController controller;
+    extern MultiController controller;
     extern ADIButton leftLimitSwitch;
     extern ADIButton rightLimitSwitch;
 
-    void initialize();
     void reset();
 
 }

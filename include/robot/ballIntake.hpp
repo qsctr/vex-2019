@@ -1,11 +1,10 @@
 #pragma once
 
 #include "main.h"
+#include "controller/voltageController.hpp"
 
 namespace robot::ballIntake {
 
-    extern Motor motor;
-
-    void initialize();
+    extern VoltageController controller;
 
 }

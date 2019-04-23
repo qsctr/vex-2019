@@ -3,11 +3,7 @@
 
 namespace robot::ballIntake {
 
-    Motor motor {4};
-
-    void initialize() {
-        motor.setGearing(AbstractMotor::gearset::green);
-        motor.setBrakeMode(AbstractMotor::brakeMode::brake);
-    }
+    VoltageController controller {std::make_shared<Motor>(4),
+        AbstractMotor::gearset::green, AbstractMotor::brakeMode::brake};
 
 }

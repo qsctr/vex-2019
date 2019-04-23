@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include "controller/multiController.hpp"
 
 namespace robot::capIntake {
 
@@ -13,11 +14,9 @@ namespace robot::capIntake {
         constexpr double highPoleDelivery = 70;
     }
 
-    extern Motor motor;
-    extern AsyncPosIntegratedController controller;
+    extern MultiController controller;
     extern Potentiometer potentiometer;
 
-    void initialize();
     void resetPosition();
 
 }
