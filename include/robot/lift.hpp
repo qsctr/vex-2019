@@ -9,7 +9,7 @@ namespace robot::lift {
         constexpr double initialGroundPickup = -50;
         constexpr double holdGroundPickup = 0;
         constexpr double lowPoleDelivery = 650;
-        constexpr double highPoleDelivery = 750;
+        constexpr double highPoleDelivery = 800;
         constexpr double lowPoleDelivery2 = 400;
         constexpr double highPoleDelivery2 = 500;
         constexpr double lowPolePickup = 400;
