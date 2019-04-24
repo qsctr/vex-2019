@@ -13,7 +13,7 @@ posController {std::make_unique<AsyncPosIntegratedController>(
 }
 
 std::optional<double> MultiController::getTarget() {
-    if (posController->isDisabled()) {
+    if (!std::holds_alternative<PositionMode>(state)) {
         return std::nullopt;
     }
     return posController->getTarget();
@@ -26,14 +26,14 @@ double MultiController::getPosition() {
 void MultiController::setPosition(double position, double velocityScale) {
     posController->setMaxVelocity(maxVelocity * velocityScale);
     posController->setTarget(position);
-    if (posController->isDisabled()) {
+    if (!std::holds_alternative<PositionMode>(state)) {
         posController->flipDisable(false);
     }
 }
 
 void MultiController::movePosition(double position, double velocityScale) {
     setPosition(position, velocityScale);
-    callback = std::nullopt;
+    state = PositionMode {std::nullopt};
 }
 
 void MultiController::movePosition(double position,
@@ -44,7 +44,7 @@ std::function<void ()> settledCallback) {
 void MultiController::movePosition(double position, double velocityScale,
 std::function<void ()> settledCallback) {
     setPosition(position, velocityScale);
-    callback = SettledCallback {settledCallback};
+    state = PositionMode {PositionMode::SettledCallback {settledCallback}};
 }
 
 void MultiController::movePosition(double position,
@@ -55,46 +55,50 @@ std::function<bool ()> condition, std::function<void ()> customCallback) {
 void MultiController::movePosition(double position, double velocityScale,
 std::function<bool ()> condition, std::function<void ()> customCallback) {
     setPosition(position, velocityScale);
-    callback = CustomCallback {condition, customCallback};
+    state = PositionMode {PositionMode::CustomCallback
+        {condition, customCallback}};
 }
 
 void MultiController::moveVoltage(double voltageScale) {
-    if (!posController->isDisabled()) {
+    if (std::holds_alternative<PositionMode>(state)) {
         posController->flipDisable(true);
     }
+    state = VoltageMode {};
     VoltageController::moveVoltage(voltageScale);
 }
 
 void MultiController::moveVoltageDefault(double voltageScale) {
-    if (posController->isDisabled()) {
+    if (std::holds_alternative<VoltageMode>(state)) {
         VoltageController::moveVoltage(voltageScale);
     }
 }
 
-void MultiController::execCallback(std::function<void ()> f) {
-    callback = std::nullopt;
-    f();
-}
-
 void MultiController::checkCallback() {
-    if (!posController->isDisabled() && callback) {
-        std::visit(overload(
-            [&](SettledCallback sc) {
-                if (posController->isSettled()) {
-                    execCallback(sc.callback);
-                }
-            },
-            [&](CustomCallback cc) {
-                if (cc.condition()) {
-                    execCallback(cc.callback);
-                }
+    std::visit(overload(
+        [&](PositionMode positionState) {
+            if (positionState.callback) {
+                std::visit(overload(
+                    [&](PositionMode::SettledCallback sc) {
+                        if (posController->isSettled()) {
+                            state = PositionMode {std::nullopt};
+                            sc.callback();
+                        }
+                    },
+                    [&](PositionMode::CustomCallback cc) {
+                        if (cc.condition()) {
+                            state = PositionMode {std::nullopt};
+                            cc.callback();
+                        }
+                    }
+                ), positionState.callback.value());
             }
-        ), callback.value());
-    }
+        },
+        [](auto&&) {}
+    ), state);
 }
 
 void MultiController::waitUntilSettled() {
-    if (!posController->isDisabled()) {
+    if (std::holds_alternative<PositionMode>(state)) {
         posController->waitUntilSettled();
     }
 }

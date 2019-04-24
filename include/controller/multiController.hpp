@@ -7,18 +7,21 @@
 class MultiController : public VoltageController {
     static constexpr double defaultVelocityScale = 1;
 protected:
-    struct SettledCallback {
-        std::function<void ()> callback;
-    };
-    struct CustomCallback {
-        std::function<bool ()> condition;
-        std::function<void ()> callback;
+    struct VoltageMode {};
+    struct PositionMode {
+        struct SettledCallback {
+            std::function<void ()> callback;
+        };
+        struct CustomCallback {
+            std::function<bool ()> condition;
+            std::function<void ()> callback;
+        };
+        std::optional<std::variant<SettledCallback, CustomCallback>> callback;
     };
     const int32_t maxVelocity;
     std::unique_ptr<AsyncPosIntegratedController> posController;
-    std::optional<std::variant<SettledCallback, CustomCallback>> callback;
+    std::variant<VoltageMode, PositionMode> state;
     void setPosition(double position, double velocityScale);
-    void execCallback(std::function<void ()> f);
 public:
     MultiController(std::shared_ptr<AbstractMotor> motor,
         AbstractMotor::gearset gearing, AbstractMotor::brakeMode brakeMode);
