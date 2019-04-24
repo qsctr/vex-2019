@@ -19,14 +19,6 @@ namespace teleop {
             || abs(rightAnalog) > ANALOG_DEADBAND;
     }
 
-    void lowPoleFlip3() { robot::lift::controller.movePosition(400); }
-    void lowPoleFlip2() { robot::capIntake::controller.movePosition(-10, 0.5, lowPoleFlip3); }
-    void lowPoleFlip() { robot::capIntake::controller.movePosition(300, lowPoleFlip2); }
-
-    void highPoleFlip3() { robot::lift::controller.movePosition(500); }
-    void highPoleFlip2() { robot::capIntake::controller.movePosition(70, 0.5, highPoleFlip3); }
-    void highPoleFlip() { robot::capIntake::controller.movePosition(300, highPoleFlip2); }
-
     std::optional<double> getSideDrivePower(float analog,
     ControllerButton adjustPositive, ControllerButton adjustNegative) {
         if (abs(analog) > ANALOG_DEADBAND)
@@ -70,35 +62,75 @@ void opcontrol() {
     while (true) {
         drive();
         if (controls::groundPickup.changedToPressed()) {
-            robot::lift::controller.movePosition(-50);
-            robot::capIntake::controller.movePosition(-30);
+            robot::lift::controller.movePosition(
+            robot::lift::positions::initialGroundPickup,
+            robot::lift::isDown, [&] {
+                robot::lift::controller.movePosition(
+                    robot::lift::positions::holdGroundPickup);
+            });
+            robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::groundPickup);
         } else if (controls::lowPoleDelivery.changedToPressed()) {
-            robot::lift::controller.movePosition(650);
-            robot::capIntake::controller.movePosition(-10);
+            robot::lift::controller.movePosition(
+                robot::lift::positions::lowPoleDelivery);
+            robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::lowPoleDelivery);
         } else if (controls::highPoleDelivery.changedToPressed()) {
-            robot::lift::controller.movePosition(750);
-            robot::capIntake::controller.movePosition(70);
+            robot::lift::controller.movePosition(
+                robot::lift::positions::highPoleDelivery);
+            robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::highPoleDelivery);
         } else if (controls::lowPolePickup.changedToPressed()) {
-            robot::lift::controller.movePosition(350);
-            robot::capIntake::controller.movePosition(0);
+            robot::lift::controller.movePosition(
+                robot::lift::positions::lowPolePickup);
+            robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::flat);
         } else if (controls::highPolePickup.changedToPressed()) {
-            robot::lift::controller.movePosition(500);
-            robot::capIntake::controller.movePosition(0);
+            robot::lift::controller.movePosition(
+                robot::lift::positions::highPolePickup);
+            robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::flat);
         } else if (controls::flipCap.changedToPressed()) {
-            // auto liftTarget = robot::lift::controller.getTarget();
-            // if (!robot::lift::controller.isDisabled() && liftTarget == 350) {
-            //     robot::lift::controller.movePosition(650, lowPoleFlip);
-            // } else if (!robot::lift::controller.isDisabled() && liftTarget == 500) {
-            //     robot::lift::controller.movePosition(750, highPoleFlip);
-            // } else {
-            //     robot::capIntake::controller.movePosition(300, [&] {
-            //         robot::capIntake::controller.movePosition(0, 0.5);
-            //     });
-            // }
+            auto liftTarget = robot::lift::controller.getTarget();
+            if (liftTarget
+            && liftTarget.value() == robot::lift::positions::lowPolePickup) {
+                robot::lift::controller.movePosition(
+                robot::lift::positions::lowPoleDelivery, [&] {
+                    robot::capIntake::controller.movePosition(
+                    robot::capIntake::positions::flip, [&] {
+                        robot::capIntake::controller.movePosition(
+                        robot::capIntake::positions::lowPoleDelivery, [&] {
+                            robot::lift::controller.movePosition(
+                                robot::lift::positions::lowPoleDelivery2);
+                        });
+                    });
+                });
+            } else if (liftTarget
+            && liftTarget.value() == robot::lift::positions::highPolePickup) {
+                robot::lift::controller.movePosition(
+                robot::lift::positions::highPoleDelivery, [&] {
+                    robot::capIntake::controller.movePosition(
+                    robot::capIntake::positions::flip, [&] {
+                        robot::capIntake::controller.movePosition(
+                        robot::capIntake::positions::highPoleDelivery, [&] {
+                            robot::lift::controller.movePosition(
+                                robot::lift::positions::highPoleDelivery2);
+                        });
+                    });
+                });
+            } else {
+                robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::flip, [&] {
+                    robot::capIntake::controller.movePosition(
+                        robot::capIntake::positions::flat);
+                });
+            }
         } else if (controls::capIntakeUp.changedToPressed()) {
-            robot::capIntake::controller.movePosition(300);
+            robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::flip);
         } else if (controls::capIntakeFlat.changedToPressed()) {
-            robot::capIntake::controller.movePosition(0);
+            robot::capIntake::controller.movePosition(
+                robot::capIntake::positions::flat);
         } else {
             if (controls::manualLiftUp.isPressed()) {
                 robot::lift::controller.moveVoltage(1);
@@ -127,8 +159,8 @@ void opcontrol() {
         } else {
             robot::ballIntake::controller.moveVoltage(0);
         }
-        robot::lift::controller.checkSettled();
-        robot::capIntake::controller.checkSettled();
+        robot::lift::controller.checkCallback();
+        robot::capIntake::controller.checkCallback();
         if (robot::lift::leftLimitSwitch.isPressed() && robot::lift::rightLimitSwitch.isPressed()) {
             robot::lift::controller.getMotor()->tarePosition();
         }

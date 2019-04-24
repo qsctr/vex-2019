@@ -1,5 +1,6 @@
 #include "main.h"
 #include "controller/multiController.hpp"
+#include "util/overload.hpp"
 
 MultiController::MultiController(std::shared_ptr<AbstractMotor> motor,
 AbstractMotor::gearset gearing, AbstractMotor::brakeMode brakeMode)
@@ -9,6 +10,13 @@ posController {std::make_unique<AsyncPosIntegratedController>(
     std::shared_ptr(motor), maxVelocity, TimeUtilFactory::create())}
 {
     posController->flipDisable(true);
+}
+
+std::optional<double> MultiController::getTarget() {
+    if (posController->isDisabled()) {
+        return std::nullopt;
+    }
+    return posController->getTarget();
 }
 
 double MultiController::getPosition() {
@@ -25,18 +33,29 @@ void MultiController::setPosition(double position, double velocityScale) {
 
 void MultiController::movePosition(double position, double velocityScale) {
     setPosition(position, velocityScale);
-    onSettled = std::nullopt;
+    callback = std::nullopt;
 }
 
 void MultiController::movePosition(double position,
-std::function<void()> settledCb) {
-    movePosition(position, defaultVelocityScale, settledCb);
+std::function<void ()> settledCallback) {
+    movePosition(position, defaultVelocityScale, settledCallback);
 }
 
 void MultiController::movePosition(double position, double velocityScale,
-std::function<void()> settledCb) {
+std::function<void ()> settledCallback) {
     setPosition(position, velocityScale);
-    onSettled = settledCb;
+    callback = SettledCallback {settledCallback};
+}
+
+void MultiController::movePosition(double position,
+std::function<bool ()> condition, std::function<void ()> customCallback) {
+    movePosition(position, defaultVelocityScale, condition, customCallback);
+}
+
+void MultiController::movePosition(double position, double velocityScale,
+std::function<bool ()> condition, std::function<void ()> customCallback) {
+    setPosition(position, velocityScale);
+    callback = CustomCallback {condition, customCallback};
 }
 
 void MultiController::moveVoltage(double voltageScale) {
@@ -52,12 +71,25 @@ void MultiController::moveVoltageDefault(double voltageScale) {
     }
 }
 
-void MultiController::checkSettled() {
-    if (!posController->isDisabled() && onSettled
-    && posController->isSettled()) {
-        auto settledCb = onSettled.value();
-        onSettled = std::nullopt;
-        settledCb();
+void MultiController::execCallback(std::function<void ()> f) {
+    callback = std::nullopt;
+    f();
+}
+
+void MultiController::checkCallback() {
+    if (!posController->isDisabled() && callback) {
+        std::visit(overload(
+            [&](SettledCallback sc) {
+                if (posController->isSettled()) {
+                    execCallback(sc.callback);
+                }
+            },
+            [&](CustomCallback cc) {
+                if (cc.condition()) {
+                    execCallback(cc.callback);
+                }
+            }
+        ), callback.value());
     }
 }
 

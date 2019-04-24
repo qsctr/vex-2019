@@ -2,14 +2,16 @@
 #include "constants.hpp"
 #include "robot/lift.hpp"
 
-constexpr auto gearing = AbstractMotor::gearset::red;
-
 namespace robot::lift {
 
     MultiController controller {std::make_shared<Motor>(11),
         AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
     ADIButton leftLimitSwitch {'G'};
     ADIButton rightLimitSwitch {'H'};
+
+    bool isDown() {
+        return leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed();
+    }
 
     void reset() {
         controller.moveVoltage(-1);
