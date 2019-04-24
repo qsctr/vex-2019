@@ -33,7 +33,8 @@ namespace teleop {
                     robot::capIntake::positions::flat, [=] {
                         robot::capIntake::controller->movePosition(
                         capIntakeDownPosition, [=] {
-                            robot::lift::controller->movePosition(liftDownPosition);
+                            robot::lift::controller->movePosition(
+                                liftDownPosition);
                         });
                     });
                 } else {
