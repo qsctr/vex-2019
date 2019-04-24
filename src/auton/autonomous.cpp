@@ -48,7 +48,7 @@ void autonomous() {
     robot::ballIntake::controller->moveVoltage(0);
     uint32_t totalTime = pros::millis() - startingTime;
     while (true) {
-        printf("%u\n", totalTime);
+        printf("%lu\n", totalTime);
         pros::delay(10);
     }
 
