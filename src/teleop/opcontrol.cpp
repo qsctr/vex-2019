@@ -14,6 +14,27 @@ namespace teleop {
         Controller ball {controllerIds::ball};
     }
 
+    void capFlipSequence(double capIntakeDownPosition) {
+        robot::capIntake::controller.movePosition(
+        robot::capIntake::positions::flip, [=] {
+            robot::capIntake::controller.movePosition(
+                capIntakeDownPosition);
+        });
+    }
+
+    void poleFlipSequence(double liftUpPosition, double capIntakeDownPosition,
+    double liftDownPosition) {
+        robot::lift::controller.movePosition(liftUpPosition, [=] {
+            robot::capIntake::controller.movePosition(
+            robot::capIntake::positions::flip, [=] {
+                robot::capIntake::controller.movePosition(
+                    capIntakeDownPosition, [=] {
+                    robot::lift::controller.movePosition(liftDownPosition);
+                });
+            });
+        });
+    }
+
     constexpr bool analogActive(float leftAnalog, float rightAnalog) {
         return abs(leftAnalog) > ANALOG_DEADBAND
             || abs(rightAnalog) > ANALOG_DEADBAND;
@@ -56,6 +77,7 @@ namespace teleop {
 }
 
 void opcontrol() {
+    puts("hi");
     using namespace teleop;
     robot::lift::reset();
     int i = 0;
@@ -94,36 +116,16 @@ void opcontrol() {
             auto liftTarget = robot::lift::controller.getTarget();
             if (liftTarget
             && liftTarget.value() == robot::lift::positions::lowPolePickup) {
-                robot::lift::controller.movePosition(
-                robot::lift::positions::lowPoleDelivery, [&] {
-                    robot::capIntake::controller.movePosition(
-                    robot::capIntake::positions::flip, [&] {
-                        robot::capIntake::controller.movePosition(
-                        robot::capIntake::positions::lowPoleDelivery, [&] {
-                            robot::lift::controller.movePosition(
-                                robot::lift::positions::lowPoleDelivery2);
-                        });
-                    });
-                });
+                poleFlipSequence(robot::lift::positions::lowPoleDelivery,
+                    robot::capIntake::positions::lowPoleDelivery,
+                    robot::lift::positions::lowPoleDelivery2);
             } else if (liftTarget
             && liftTarget.value() == robot::lift::positions::highPolePickup) {
-                robot::lift::controller.movePosition(
-                robot::lift::positions::highPoleDelivery, [&] {
-                    robot::capIntake::controller.movePosition(
-                    robot::capIntake::positions::flip, [&] {
-                        robot::capIntake::controller.movePosition(
-                        robot::capIntake::positions::highPoleDelivery, [&] {
-                            robot::lift::controller.movePosition(
-                                robot::lift::positions::highPoleDelivery2);
-                        });
-                    });
-                });
+                poleFlipSequence(robot::lift::positions::highPoleDelivery,
+                    robot::capIntake::positions::highPoleDelivery,
+                    robot::lift::positions::highPoleDelivery2);
             } else {
-                robot::capIntake::controller.movePosition(
-                robot::capIntake::positions::flip, [&] {
-                    robot::capIntake::controller.movePosition(
-                        robot::capIntake::positions::flat);
-                });
+                capFlipSequence(robot::capIntake::positions::flat);
             }
         } else if (controls::capIntakeUp.changedToPressed()) {
             robot::capIntake::controller.movePosition(
@@ -166,7 +168,7 @@ void opcontrol() {
         }
         printf("%f %f\n", robot::capIntake::controller.getPosition(), robot::capIntake::potentiometer.get());
         if (i == 100) {
-            controllers::cap.setText(0, 0, std::to_string(robot::capIntake::controller.getPosition()));
+            controllers::cap.setText(0, 0, std::to_string(robot::lift::controller.getPosition()));
             i = 0;
         }
         pros::Task::delay(10);

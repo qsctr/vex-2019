@@ -13,10 +13,10 @@ posController {std::make_unique<AsyncPosIntegratedController>(
 }
 
 std::optional<double> MultiController::getTarget() {
-    if (!std::holds_alternative<PositionMode>(state)) {
-        return std::nullopt;
+    if (std::holds_alternative<PositionMode>(state)) {
+        return posController->getTarget();
     }
-    return posController->getTarget();
+    return std::nullopt;
 }
 
 double MultiController::getPosition() {
