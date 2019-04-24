@@ -15,22 +15,33 @@ namespace teleop {
     }
 
     void capFlipSequence(double capIntakeDownPosition) {
-        robot::capIntake::controller.movePosition(
+        robot::capIntake::controller->movePosition(
         robot::capIntake::positions::flip, [=] {
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 capIntakeDownPosition);
         });
     }
 
     void poleFlipSequence(double liftUpPosition, double capIntakeDownPosition,
     double liftDownPosition) {
-        robot::lift::controller.movePosition(liftUpPosition, [=] {
-            robot::capIntake::controller.movePosition(
+        robot::lift::controller->movePosition(liftUpPosition, [=] {
+            robot::capIntake::controller->movePosition(
             robot::capIntake::positions::flip, [=] {
-                robot::capIntake::controller.movePosition(
+                if (capIntakeDownPosition >
+                robot::capIntake::positions::flat) {
+                    robot::capIntake::controller->movePosition(
+                    robot::capIntake::positions::flat, [=] {
+                        robot::capIntake::controller->movePosition(
+                        capIntakeDownPosition, [=] {
+                            robot::lift::controller->movePosition(liftDownPosition);
+                        });
+                    });
+                } else {
+                    robot::capIntake::controller->movePosition(
                     capIntakeDownPosition, [=] {
-                    robot::lift::controller.movePosition(liftDownPosition);
-                });
+                        robot::lift::controller->movePosition(liftDownPosition);
+                    });
+                }
             });
         });
     }
@@ -58,13 +69,23 @@ namespace teleop {
             float ballForward =
                 controllers::ball.getAnalog(controls::ballDriveForward);
             float ballYaw =
-                controllers::ball.getAnalog(controls::ballDriveForward);
-            auto forwardPower = getSideDrivePower(ballForward,
-                controls::ballDriveAdjustForward,
-                controls::ballDriveAdjustBackward);
-            auto yawPower = getSideDrivePower(ballYaw,
-                controls::ballDriveAdjustRight,
-                controls::ballDriveAdjustLeft);
+                controllers::ball.getAnalog(controls::ballDriveYaw);
+            std::optional<double> forwardPower;
+            if (abs(ballForward) > ANALOG_DEADBAND) {
+                forwardPower = ballForward;
+            } else if (controls::ballDriveAdjustForward.isPressed()) {
+                forwardPower = 0.2;
+            } else if (controls::ballDriveAdjustBackward.isPressed()) {
+                forwardPower = -0.2;
+            }
+            std::optional<double> yawPower;
+            if (abs(ballYaw) > ANALOG_DEADBAND) {
+                yawPower = ballYaw;
+            } else if (controls::ballDriveAdjustLeft.isPressed()) {
+                yawPower = 0.3;
+            } else if (controls::ballDriveAdjustRight.isPressed()) {
+                yawPower = -0.3;
+            }
             if (forwardPower || yawPower) {
                 robot::drive::controller.arcade(-forwardPower.value_or(0),
                     yawPower.value_or(0));
@@ -84,36 +105,36 @@ void opcontrol() {
     while (true) {
         drive();
         if (controls::groundPickup.changedToPressed()) {
-            robot::lift::controller.movePosition(
+            robot::lift::controller->movePosition(
             robot::lift::positions::initialGroundPickup,
             robot::lift::isDown, [&] {
-                robot::lift::controller.movePosition(
+                robot::lift::controller->movePosition(
                     robot::lift::positions::holdGroundPickup);
             });
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 robot::capIntake::positions::groundPickup);
         } else if (controls::lowPoleDelivery.changedToPressed()) {
-            robot::lift::controller.movePosition(
+            robot::lift::controller->movePosition(
                 robot::lift::positions::lowPoleDelivery);
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 robot::capIntake::positions::lowPoleDelivery);
         } else if (controls::highPoleDelivery.changedToPressed()) {
-            robot::lift::controller.movePosition(
+            robot::lift::controller->movePosition(
                 robot::lift::positions::highPoleDelivery);
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 robot::capIntake::positions::highPoleDelivery);
         } else if (controls::lowPolePickup.changedToPressed()) {
-            robot::lift::controller.movePosition(
+            robot::lift::controller->movePosition(
                 robot::lift::positions::lowPolePickup);
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 robot::capIntake::positions::flat);
         } else if (controls::highPolePickup.changedToPressed()) {
-            robot::lift::controller.movePosition(
+            robot::lift::controller->movePosition(
                 robot::lift::positions::highPolePickup);
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 robot::capIntake::positions::flat);
         } else if (controls::flipCap.changedToPressed()) {
-            auto liftTarget = robot::lift::controller.getTarget();
+            auto liftTarget = robot::lift::controller->getTarget();
             if (liftTarget
             && liftTarget.value() == robot::lift::positions::lowPolePickup) {
                 poleFlipSequence(robot::lift::positions::lowPoleDelivery,
@@ -128,47 +149,50 @@ void opcontrol() {
                 capFlipSequence(robot::capIntake::positions::flat);
             }
         } else if (controls::capIntakeUp.changedToPressed()) {
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 robot::capIntake::positions::flip);
         } else if (controls::capIntakeFlat.changedToPressed()) {
-            robot::capIntake::controller.movePosition(
+            robot::capIntake::controller->movePosition(
                 robot::capIntake::positions::flat);
         } else {
             if (controls::manualLiftUp.isPressed()) {
-                robot::lift::controller.moveVoltage(1);
+                robot::lift::controller->moveVoltage(1);
             } else if (controls::manualLiftDown.isPressed()) {
-                robot::lift::controller.moveVoltage(-1);
+                robot::lift::controller->moveVoltage(-1);
             } else {
-                robot::lift::controller.moveVoltageDefault(0);
+                robot::lift::controller->moveVoltageDefault(0);
             }
             if (controls::manualCapIntakeIn.isPressed()) {
-                robot::capIntake::controller.moveVoltage(1);
+                robot::capIntake::controller->moveVoltage(1);
             } else if (controls::manualCapIntakeOut.isPressed()) {
-                robot::capIntake::controller.moveVoltage(-1);
+                robot::capIntake::controller->moveVoltage(-1);
             } else {
-                robot::capIntake::controller.moveVoltageDefault(0);
+                robot::capIntake::controller->moveVoltageDefault(0);
             }
         }
         if (controls::shoot.isPressed()) {
-            robot::shooter::controller.moveVoltage(1);
+            robot::shooter::controller->moveVoltage(1);
         } else {
-            robot::shooter::controller.moveVoltage(0);
+            robot::shooter::controller->moveVoltage(0);
         }
         if (controls::ballIntakeIn.isPressed()) {
-            robot::ballIntake::controller.moveVoltage(1);
+            robot::ballIntake::controller->moveVoltage(1);
         } else if (controls::ballIntakeOut.isPressed()) {
-            robot::ballIntake::controller.moveVoltage(-1);
+            robot::ballIntake::controller->moveVoltage(-1);
         } else {
-            robot::ballIntake::controller.moveVoltage(0);
+            robot::ballIntake::controller->moveVoltage(0);
         }
-        robot::lift::controller.checkCallback();
-        robot::capIntake::controller.checkCallback();
         if (robot::lift::leftLimitSwitch.isPressed() && robot::lift::rightLimitSwitch.isPressed()) {
-            robot::lift::controller.getMotor()->tarePosition();
+            robot::lift::controller->getMotor()->tarePosition();
         }
-        printf("%f %f\n", robot::capIntake::controller.getPosition(), robot::capIntake::potentiometer.get());
+        robot::lift::controller->checkCallback();
+        robot::capIntake::controller->checkCallback();
+        if (robot::guide::limitSwitch.changedToPressed()) {
+            controllers::cap.rumble(".");
+        }
+        printf("%f %f\n", robot::capIntake::controller->getPosition(), robot::capIntake::potentiometer.get());
         if (i == 100) {
-            controllers::cap.setText(0, 0, std::to_string(robot::lift::controller.getPosition()));
+            controllers::cap.setText(0, 0, std::to_string(robot::lift::controller->getPosition()));
             i = 0;
         }
         pros::Task::delay(10);

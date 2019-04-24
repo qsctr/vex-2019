@@ -5,6 +5,6 @@
 
 namespace robot::ballIntake {
 
-    extern VoltageController controller;
+    extern std::shared_ptr<VoltageController> controller;
 
 }

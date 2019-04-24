@@ -3,7 +3,8 @@
 
 namespace robot::shooter {
 
-    VoltageController controller {std::make_shared<Motor>(-1),
-        AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
+    std::shared_ptr<VoltageController> controller;
+    // VoltageController controller {std::make_shared<Motor>(-1),
+    //     AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
 
 }

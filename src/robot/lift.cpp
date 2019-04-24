@@ -4,8 +4,9 @@
 
 namespace robot::lift {
 
-    MultiController controller {std::make_shared<Motor>(11),
-        AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
+    std::shared_ptr<MultiController> controller;
+    // MultiController controller {std::make_shared<Motor>(11),
+    //     AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
     ADIButton leftLimitSwitch {'G'};
     ADIButton rightLimitSwitch {'H'};
 
@@ -14,12 +15,12 @@ namespace robot::lift {
     }
 
     void reset() {
-        controller.moveVoltage(-1);
+        controller->moveVoltage(-1);
         while (!(leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed())) {
             pros::Task::delay(10);
         }
-        controller.getMotor()->tarePosition();
-        controller.moveVoltage(0);
+        controller->getMotor()->tarePosition();
+        controller->moveVoltage(0);
     }
 
 }

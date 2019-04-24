@@ -12,11 +12,11 @@ namespace robot::lift {
         constexpr double highPoleDelivery = 750;
         constexpr double lowPoleDelivery2 = 400;
         constexpr double highPoleDelivery2 = 500;
-        constexpr double lowPolePickup = 350;
-        constexpr double highPolePickup = 500;
+        constexpr double lowPolePickup = 400;
+        constexpr double highPolePickup = 550;
     }
 
-    extern MultiController controller;
+    extern std::shared_ptr<MultiController> controller;
     extern ADIButton leftLimitSwitch;
     extern ADIButton rightLimitSwitch;
 
