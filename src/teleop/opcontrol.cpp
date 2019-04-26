@@ -101,7 +101,7 @@ namespace teleop {
 void opcontrol() {
     puts("hi");
     using namespace teleop;
-    robot::lift::reset();
+    // robot::lift::reset();
     int i = 0;
     while (true) {
         drive();
@@ -116,9 +116,12 @@ void opcontrol() {
                 robot::capIntake::positions::groundPickup);
         } else if (controls::lowPoleDelivery.changedToPressed()) {
             robot::lift::controller->movePosition(
-                robot::lift::positions::lowPoleDelivery);
+            robot::lift::positions::lowPoleDelivery, [] {
+                robot::capIntake::controller->movePosition(
+                    robot::capIntake::positions::lowPoleDelivery);
+            });
             robot::capIntake::controller->movePosition(
-                robot::capIntake::positions::lowPoleDelivery);
+                robot::capIntake::positions::flat);
         } else if (controls::highPoleDelivery.changedToPressed()) {
             robot::lift::controller->movePosition(
                 robot::lift::positions::highPoleDelivery);
