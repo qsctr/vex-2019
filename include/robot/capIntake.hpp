@@ -7,7 +7,7 @@ namespace robot::capIntake {
  
     namespace positions {
         constexpr double groundPickup = -60;
-        constexpr double flat = -25;
+        constexpr double flat = -10;
         constexpr double vertical = 235;
         constexpr double flip = 270;
         constexpr double lowPoleDelivery = -60;

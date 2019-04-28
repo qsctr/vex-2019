@@ -102,6 +102,8 @@ void opcontrol() {
     puts("hi");
     using namespace teleop;
     // robot::lift::reset();
+    // robot::drive::left.setReversed(false);
+    // robot::drive::right.setReversed(true);
     int i = 0;
     while (true) {
         drive();
@@ -118,15 +120,29 @@ void opcontrol() {
             robot::lift::controller->movePosition(
             robot::lift::positions::lowPoleDelivery, [] {
                 robot::capIntake::controller->movePosition(
-                    robot::capIntake::positions::lowPoleDelivery);
+                robot::capIntake::positions::flat, [] {
+                    robot::capIntake::controller->movePosition(
+                        robot::capIntake::positions::lowPoleDelivery);
+                });
             });
-            robot::capIntake::controller->movePosition(
-                robot::capIntake::positions::flat);
         } else if (controls::highPoleDelivery.changedToPressed()) {
-            robot::lift::controller->movePosition(
-                robot::lift::positions::highPoleDelivery);
-            robot::capIntake::controller->movePosition(
-                robot::capIntake::positions::highPoleDelivery);
+            if (robot::capIntake::controller->getPosition() >
+            robot::capIntake::positions::highPoleDelivery) {
+                robot::lift::controller->movePosition(
+                robot::lift::positions::highPoleDelivery, [] {
+                    robot::capIntake::controller->movePosition(
+                    robot::capIntake::positions::flat, [] {
+                        robot::capIntake::controller->movePosition(
+                            robot::capIntake::positions::highPoleDelivery);
+                    });
+                });
+            } else {
+                robot::lift::controller->movePosition(
+                robot::lift::positions::highPoleDelivery, [] {
+                    robot::capIntake::controller->movePosition(
+                        robot::capIntake::positions::highPoleDelivery);
+                });
+            }
         } else if (controls::lowPolePickup.changedToPressed()) {
             robot::lift::controller->movePosition(
                 robot::lift::positions::lowPolePickup);
@@ -186,7 +202,7 @@ void opcontrol() {
         } else {
             robot::ballIntake::controller->moveVoltage(0);
         }
-        if (robot::lift::leftLimitSwitch.isPressed() && robot::lift::rightLimitSwitch.isPressed()) {
+        if (robot::lift::isDown()) {
             robot::lift::controller->getMotor()->tarePosition();
         }
         robot::lift::controller->checkCallback();

@@ -11,12 +11,14 @@ namespace robot::lift {
     ADIButton rightLimitSwitch {'H'};
 
     bool isDown() {
-        return leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed();
+        // return leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed();
+        return rightLimitSwitch.isPressed();
     }
 
     void reset() {
+        auto startingTime = pros::millis();
         controller->moveVoltage(-1);
-        while (!(leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed())) {
+        while (!isDown() && pros::millis() < startingTime + 1000) {
             pros::Task::delay(10);
         }
         controller->getMotor()->tarePosition();
