@@ -4,7 +4,6 @@
 namespace robot::capIntake {
 
     std::shared_ptr<MultiController> controller;
-
     Potentiometer potentiometer {'F'};
 
     void initialize() {
