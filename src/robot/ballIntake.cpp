@@ -5,7 +5,11 @@ namespace robot::ballIntake {
 
     std::shared_ptr<VoltageController> controller;
 
-    // VoltageController controller {std::make_shared<Motor>(4),
-    //     AbstractMotor::gearset::green, AbstractMotor::brakeMode::brake};
+    void initialize() {
+        controller = std::make_shared<VoltageController>(
+            std::make_shared<Motor>(4),
+            AbstractMotor::gearset::green,
+            AbstractMotor::brakeMode::brake);
+    }
 
 }

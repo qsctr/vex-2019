@@ -5,10 +5,15 @@
 namespace robot::lift {
 
     std::shared_ptr<MultiController> controller;
-    // MultiController controller {std::make_shared<Motor>(11),
-    //     AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
     ADIButton leftLimitSwitch {'G'};
     ADIButton rightLimitSwitch {'H'};
+
+    void initialize() {
+        controller = std::make_shared<MultiController>(
+            std::make_shared<Motor>(11),
+            AbstractMotor::gearset::red,
+            AbstractMotor::brakeMode::brake);
+    }
 
     bool isDown() {
         // return leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed();

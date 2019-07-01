@@ -7,4 +7,6 @@ namespace robot::ballIntake {
 
     extern std::shared_ptr<VoltageController> controller;
 
+    void initialize();
+
 }

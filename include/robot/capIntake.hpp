@@ -17,6 +17,7 @@ namespace robot::capIntake {
     extern std::shared_ptr<MultiController> controller;
     extern Potentiometer potentiometer;
 
+    void initialize();
     void resetPosition();
 
 }

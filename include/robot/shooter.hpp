@@ -7,4 +7,6 @@ namespace robot::shooter {
 
     extern std::shared_ptr<VoltageController> controller;
 
+    void initialize();
+
 }

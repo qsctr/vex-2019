@@ -8,9 +8,14 @@ namespace robot::capIntake {
 
     std::shared_ptr<MultiController> controller;
 
-    // MultiController controller {std::make_shared<Motor>(-17),
-    //     AbstractMotor::gearset::red, AbstractMotor::brakeMode::brake};
     Potentiometer potentiometer {'F'};
+
+    void initialize() {
+        controller = std::make_shared<MultiController>(
+            std::make_shared<Motor>(-17),
+            AbstractMotor::gearset::red,
+            AbstractMotor::brakeMode::brake);
+    }
 
     void resetPosition() {
         std::dynamic_pointer_cast<Motor>(controller->getMotor())
