@@ -16,12 +16,12 @@ namespace {
 
 void autonomous() {
     uint32_t startingTime = pros::millis();
-    robot::drive::controller.setTurnsMirrored(color == Color::Red);
+    robot::drive::controller->setTurnsMirrored(color == Color::Red);
     robot::lift::reset();
     robot::lift::controller->movePosition(100);
     robot::lift::controller->waitUntilSettled();
     if constexpr (tile == Tile::Back) {
-        AsyncMotionProfileController profileController = AsyncControllerFactory::motionProfile(0.6, 3, 6, robot::drive::controller);
+        AsyncMotionProfileController profileController = AsyncControllerFactory::motionProfile(0.6, 3, 6, *robot::drive::controller);
         ChassisControllerIntegrated chassisController2 = ChassisControllerFactory::create(robot::drive::right, robot::drive::left, AbstractMotor::gearset::green);
         AsyncMotionProfileController profileController2 = AsyncControllerFactory::motionProfile(0.5, 1, 5, chassisController2);
         profileController.generatePath({
@@ -108,22 +108,22 @@ void autonomous() {
         // profileController.setTarget("to-climb");
         // profileController.waitUntilSettled();
         robot::lift::controller->waitUntilSettled();
-        robot::drive::controller.setMaxVelocity(100);
-        // robot::drive::controller.moveDistance(-25_in);
-        // robot::drive::controller.turnAngle(-50_deg);
-        robot::drive::controller.moveDistance(-24_in);
-        robot::drive::controller.turnAngle(-46_deg);
+        robot::drive::controller->setMaxVelocity(100);
+        // robot::drive::controller->moveDistance(-25_in);
+        // robot::drive::controller->turnAngle(-50_deg);
+        robot::drive::controller->moveDistance(-24_in);
+        robot::drive::controller->turnAngle(-46_deg);
         // // profileController.setTarget("back");
         // // profileController.waitUntilSettled();
         // robot::capIntake::controller->movePosition(robot::capIntake::positions::flat);
         // robot::capIntake::controller->waitUntilSettled();
         robot::lift::controller->movePosition(robot::lift::positions::lowPoleDelivery);
-        robot::drive::controller.moveDistanceAsync(10_in);
+        robot::drive::controller->moveDistanceAsync(10_in);
         robot::lift::controller->waitUntilSettled();
-        robot::drive::controller.waitUntilSettled();
+        robot::drive::controller->waitUntilSettled();
         // robot::lift::controller->movePosition(robot::lift::positions::lowPoleDelivery);
         // robot::lift::controller->waitUntilSettled();
-        robot::drive::controller.moveDistance(12.5_in);
+        robot::drive::controller->moveDistance(12.5_in);
         robot::capIntake::controller->movePosition(robot::capIntake::positions::flip);
         robot::capIntake::controller->waitUntilSettled();
         // robot::capIntake::controller->movePosition(0);
@@ -135,8 +135,8 @@ void autonomous() {
             pros::delay(10);
         }
         // robot::lift::controller->waitUntilSettled();
-        robot::drive::controller.moveDistance(-9_in);
-        robot::drive::controller.turnAngle(-12_deg);
+        robot::drive::controller->moveDistance(-9_in);
+        robot::drive::controller->turnAngle(-12_deg);
         robot::shooter::controller->moveVoltage(1);
         pros::delay(700);
         robot::shooter::controller->moveVoltage(0);
@@ -158,37 +158,37 @@ void autonomous() {
             // // robot::ballIntake::controller->moveVoltage(0);
             // // robot::shooter::controller->moveVoltage(0);
             // // robot::ballIntake::controller->moveVoltage(1);
-            // // robot::drive::controller.turnAngle(-92_deg);
-            // // robot::drive::controller.moveDistance(-90_cm);
-            // robot::drive::controller.moveDistanceAsync(-90_cm);
+            // // robot::drive::controller->turnAngle(-92_deg);
+            // // robot::drive::controller->moveDistance(-90_cm);
+            // robot::drive::controller->moveDistanceAsync(-90_cm);
             // robot::ballIntake::controller->moveVoltage(-1);
             // pros::delay(200);
             // robot::ballIntake::controller->moveVoltage(1);
-            // robot::drive::controller.waitUntilSettled();
+            // robot::drive::controller->waitUntilSettled();
             // robot::lift::controller->movePosition(0);
             // robot::capIntake::controller->movePosition(robot::capIntake::positions::groundPickup);
             // // pros::Task::delay(500);
-            // robot::drive::controller.moveDistance(40_cm);
-            // robot::drive::controller.turnAngle(color == Color::Blue ? 133_deg : 138_deg);
+            // robot::drive::controller->moveDistance(40_cm);
+            // robot::drive::controller->turnAngle(color == Color::Blue ? 133_deg : 138_deg);
             // robot::capIntake::controller->waitUntilSettled();
-            // robot::drive::controller.moveDistance(color == Color::Blue ? 60_cm : 57_cm);
+            // robot::drive::controller->moveDistance(color == Color::Blue ? 60_cm : 57_cm);
             // robot::capIntake::controller->movePosition(robot::capIntake::positions::flip);
             // while (robot::capIntake::controller->getPosition() < 50) {
             //     pros::Task::delay(10);
             // }
             // robot::lift::controller->movePosition(robot::lift::positions::lowPoleDelivery);
-            // robot::drive::controller.moveDistance(color == Color::Blue ? -32_cm : -29_cm);
-            // robot::drive::controller.turnAngle(-64_deg);
+            // robot::drive::controller->moveDistance(color == Color::Blue ? -32_cm : -29_cm);
+            // robot::drive::controller->turnAngle(-64_deg);
             // pros::delay(200);
             // robot::capIntake::controller->movePosition(robot::capIntake::positions::flat);
             // // robot::lift::controller->waitUntilSettled();
             // robot::capIntake::controller->waitUntilSettled();
-            // // robot::drive::controller.forward(1);
+            // // robot::drive::controller->forward(1);
             // // while (!robot::guide::limitSwitch.isPressed()) {
             // //     pros::Task::delay(10);
             // // }
-            // // robot::drive::controller.stop();
-            // robot::drive::controller.moveDistance(40_cm);
+            // // robot::drive::controller->stop();
+            // robot::drive::controller->moveDistance(40_cm);
             // robot::capIntake::controller->movePosition(robot::capIntake::positions::lowPoleDelivery);
             // robot::capIntake::controller->waitUntilSettled();
             // robot::shooter::controller->moveVoltage(1);
@@ -200,45 +200,45 @@ void autonomous() {
             // }
             // robot::shooter::controller->moveVoltage(0);
             // robot::ballIntake::controller->moveVoltage(0);
-            // // robot::drive::controller.moveDistance(-30_cm);
-            // robot::drive::controller.forward(-1);
+            // // robot::drive::controller->moveDistance(-30_cm);
+            // robot::drive::controller->forward(-1);
             // while (pros::millis() < startingTime + 15000) {
             //     pros::delay(10);
             // }
-            // robot::drive::controller.stop();
+            // robot::drive::controller->stop();
         // } else if constexpr (color == Color::Red) {
             // // robot::shooter::controller->moveVoltage(1);
             // robot::ballIntake::controller->moveVoltage(-1);
             // pros::delay(500);
             // robot::ballIntake::controller->moveVoltage(0);
-            // // robot::drive::controller.moveDistance(15_in);
+            // // robot::drive::controller->moveDistance(15_in);
             // // pros::delay(1000);
             // // robot::shooter::controller->moveVoltage(0);
-            // // robot::drive::controller.moveDistance(5_in);
+            // // robot::drive::controller->moveDistance(5_in);
             // // robot::shooter::controller->moveVoltage(1);
             // // pros::delay(700);
             // // robot::shooter::controller->moveVoltage(0);
             // // pros::delay(5000);
-            // robot::drive::controller.moveDistance(-25.5_in);
-            // // robot::drive::controller.turnAngle(-38_deg);
-            // // robot::drive::controller.turnAngle(-55_deg);
+            // robot::drive::controller->moveDistance(-25.5_in);
+            // // robot::drive::controller->turnAngle(-38_deg);
+            // // robot::drive::controller->turnAngle(-55_deg);
             // // robot::shooter::controller->moveVoltage(1);
             // // pros::delay(700);
             // // robot::shooter::controller->moveVoltage(0);
-            // // // robot::drive::controller.turnAngle(-52_deg);
-            // // robot::drive::controller.turnAngle(-35_deg);
-            // robot::drive::controller.turnAngle(-90_deg);
-            // robot::drive::controller.moveDistance(-46_in);
-            // // robot::drive::controller.turnAngle(-90_deg);
-            // // robot::drive::controller.moveDistance(-45_in);
-            // // robot::drive::controller.turnAngle(50_deg);
+            // // // robot::drive::controller->turnAngle(-52_deg);
+            // // robot::drive::controller->turnAngle(-35_deg);
+            // robot::drive::controller->turnAngle(-90_deg);
+            // robot::drive::controller->moveDistance(-46_in);
+            // // robot::drive::controller->turnAngle(-90_deg);
+            // // robot::drive::controller->moveDistance(-45_in);
+            // // robot::drive::controller->turnAngle(50_deg);
             // // robot::shooter::controller->moveVoltage(1);
             // // pros::delay(700);
             // // robot::shooter::controller->moveVoltage(0);
         // }
     } else if constexpr (tile == Tile::Front) {
-        robot::drive::controller.moveDistance(-40_in);
-        robot::drive::controller.moveDistance(20_in);
+        robot::drive::controller->moveDistance(-40_in);
+        robot::drive::controller->moveDistance(20_in);
     }
 
 }

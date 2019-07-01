@@ -6,7 +6,7 @@ namespace robot::drive {
 
     extern MotorGroup left;
     extern MotorGroup right;
-    extern ChassisControllerIntegrated controller;
+    extern std::shared_ptr<ChassisControllerIntegrated> controller;
 
     void initialize();
 

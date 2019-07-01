@@ -88,12 +88,12 @@ namespace teleop {
                 yawPower = -0.3;
             }
             if (forwardPower || yawPower) {
-                robot::drive::controller.arcade(-forwardPower.value_or(0),
+                robot::drive::controller->arcade(-forwardPower.value_or(0),
                     yawPower.value_or(0));
                 return;
             }
         }
-        robot::drive::controller.tank(capLeft, capRight);
+        robot::drive::controller->tank(capLeft, capRight);
     }
 
 }

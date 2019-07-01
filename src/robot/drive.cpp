@@ -5,11 +5,12 @@ namespace robot::drive {
 
     MotorGroup left = {3, 20};
     MotorGroup right = {-2, -12};
-    ChassisControllerIntegrated controller = ChassisControllerFactory::create(
-        left, right, AbstractMotor::gearset::green, {4.25_in, 14_in});
+    std::shared_ptr<ChassisControllerIntegrated> controller;
 
     void initialize() {
-        controller.setBrakeMode(AbstractMotor::brakeMode::brake);
+        controller = ChassisControllerFactory::createPtr(left, right,
+            AbstractMotor::gearset::green, {4.25_in, 14_in});
+        controller->setBrakeMode(AbstractMotor::brakeMode::brake);
     }
 
 }
