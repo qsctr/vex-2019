@@ -14,6 +14,11 @@ namespace robot::capIntake {
         constexpr double highPoleDelivery = 40;
     }
 
+    namespace potentiometerValues {
+        constexpr double flat = 2500;
+        constexpr double vertical = 970;
+    }
+
     extern std::shared_ptr<MultiController> controller;
     extern Potentiometer potentiometer;
 
