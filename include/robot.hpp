@@ -6,3 +6,9 @@
 #include "robot/guide.hpp"
 #include "robot/lift.hpp"
 #include "robot/shooter.hpp"
+
+namespace robot {
+
+    void initialize();
+
+}

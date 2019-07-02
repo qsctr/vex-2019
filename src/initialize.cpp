@@ -3,11 +3,7 @@
 #include "robot.hpp"
 
 void initialize() {
-    robot::lift::initialize();
-    robot::capIntake::initialize();
-    robot::shooter::initialize();
-    robot::ballIntake::initialize();
-    robot::drive::initialize();
+    robot::initialize();
     pros::Task::delay(sensorInitTime);
     robot::capIntake::resetPosition();
 }
