@@ -4,6 +4,6 @@
 
 namespace util {
 
-    void delayUntil(std::function<bool()> cond);
+    void delayUntil(std::function<bool ()> cond);
 
 }
