@@ -1,15 +1,64 @@
 #include "main.h"
 #include "constants.hpp"
 #include "robot.hpp"
-#include "teleop/controls.hpp"
 
-namespace teleop {
+namespace {
 
-    constexpr float ANALOG_DEADBAND {0.05};
+    constexpr float analogDeadband = 0.05;
+
+    namespace controllerIds {
+        constexpr auto cap = ControllerId::master;
+        constexpr auto ball = ControllerId::partner;
+    }
 
     namespace controllers {
         Controller cap {controllerIds::cap};
         Controller ball {controllerIds::ball};
+    }
+
+    namespace controls {
+        constexpr auto capDriveLeft = ControllerAnalog::leftY;
+        constexpr auto capDriveRight = ControllerAnalog::rightY;
+        constexpr auto ballDriveForward = ControllerAnalog::leftY;
+        constexpr auto ballDriveYaw = ControllerAnalog::rightX;
+        ControllerButton manualLiftUp
+            {controllerIds::cap, ControllerDigital::R1};
+        ControllerButton manualLiftDown
+            {controllerIds::cap, ControllerDigital::R2};
+        ControllerButton manualCapIntakeIn
+            {controllerIds::cap, ControllerDigital::L1};
+        ControllerButton manualCapIntakeOut
+            {controllerIds::cap, ControllerDigital::L2};
+        ControllerButton groundPickup
+            {controllerIds::cap, ControllerDigital::B};
+        ControllerButton lowPoleDelivery
+            {controllerIds::cap, ControllerDigital::A};
+        ControllerButton highPoleDelivery
+            {controllerIds::cap, ControllerDigital::X};
+        ControllerButton lowPolePickup
+            {controllerIds::cap, ControllerDigital::left};
+        ControllerButton highPolePickup
+            {controllerIds::cap, ControllerDigital::up};
+        ControllerButton flipCap
+            {controllerIds::cap, ControllerDigital::right};
+        ControllerButton capIntakeUp
+            {controllerIds::cap, ControllerDigital::Y};
+        ControllerButton capIntakeFlat
+            {controllerIds::cap, ControllerDigital::down};
+        ControllerButton ballDriveAdjustForward
+            {controllerIds::ball, ControllerDigital::up};
+        ControllerButton ballDriveAdjustBackward
+            {controllerIds::ball, ControllerDigital::down};
+        ControllerButton ballDriveAdjustLeft
+            {controllerIds::ball, ControllerDigital::A};
+        ControllerButton ballDriveAdjustRight
+            {controllerIds::ball, ControllerDigital::Y};
+        ControllerButton shoot
+            {controllerIds::ball, ControllerDigital::R1};
+        ControllerButton ballIntakeIn
+            {controllerIds::ball, ControllerDigital::L1};
+        ControllerButton ballIntakeOut
+            {controllerIds::ball, ControllerDigital::L2};
     }
 
     void capFlipSequence(double capIntakeDownPosition) {
@@ -49,7 +98,7 @@ namespace teleop {
     ControllerButton& positiveAdjust, ControllerButton& negativeAdjust,
     double adjustPower) {
         auto analogValue = controllers::ball.getAnalog(analog);
-        if (abs(analogValue) > ANALOG_DEADBAND) {
+        if (abs(analogValue) > analogDeadband) {
             return analogValue;
         }
         if (positiveAdjust.isPressed()) {
@@ -64,7 +113,7 @@ namespace teleop {
     void drive() {
         float capLeft = controllers::cap.getAnalog(controls::capDriveLeft);
         float capRight = controllers::cap.getAnalog(controls::capDriveRight);
-        if (abs(capLeft) < ANALOG_DEADBAND && abs(capRight) < ANALOG_DEADBAND) {
+        if (abs(capLeft) < analogDeadband && abs(capRight) < analogDeadband) {
             auto forwardPower = ballControl(
                 controls::ballDriveForward,
                 controls::ballDriveAdjustForward,
@@ -87,7 +136,6 @@ namespace teleop {
 }
 
 void opcontrol() {
-    using namespace teleop;
     while (true) {
         drive();
         if (controls::groundPickup.changedToPressed()) {
