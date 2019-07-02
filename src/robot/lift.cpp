@@ -1,6 +1,7 @@
 #include "main.h"
 #include "constants.hpp"
 #include "robot/lift.hpp"
+#include "util.hpp"
 
 namespace robot::lift {
 
@@ -16,16 +17,17 @@ namespace robot::lift {
     }
 
     bool isDown() {
-        // return leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed();
+        // left limit switch is broken
         return rightLimitSwitch.isPressed();
+        // return leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed();
     }
 
     void reset() {
         auto startingTime = pros::millis();
         controller->moveVoltage(-1);
-        while (!isDown() && pros::millis() < startingTime + 1000) {
-            pros::Task::delay(10);
-        }
+        util::delayUntil([startingTime] {
+            return isDown() || pros::millis() > startingTime + 1000;
+        });
         controller->getMotor()->tarePosition();
         controller->moveVoltage(0);
     }
