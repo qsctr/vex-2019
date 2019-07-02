@@ -8,7 +8,7 @@ void initialize() {
     robot::shooter::initialize();
     robot::ballIntake::initialize();
     robot::drive::initialize();
-    pros::Task::delay(SENSOR_INITIALIZATION_TIME);
+    pros::Task::delay(sensorInitTime);
     robot::capIntake::resetPosition();
 }
 
