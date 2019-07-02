@@ -1,4 +1,5 @@
 #include "util.hpp"
+#include <functional>
 #include "main.h"
 #include "constants.hpp"
 

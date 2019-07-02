@@ -1,6 +1,8 @@
+#include "robot/lift.hpp"
+#include <memory>
 #include "main.h"
 #include "constants.hpp"
-#include "robot/lift.hpp"
+#include "controller/multiController.hpp"
 #include "util.hpp"
 
 namespace robot::lift {
@@ -17,9 +19,8 @@ namespace robot::lift {
     }
 
     bool isDown() {
-        // left limit switch is broken
-        return rightLimitSwitch.isPressed();
         // return leftLimitSwitch.isPressed() && rightLimitSwitch.isPressed();
+        return rightLimitSwitch.isPressed();
     }
 
     void reset() {

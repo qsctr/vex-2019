@@ -1,5 +1,8 @@
 #pragma once
 
+#include <functional>
+#include <memory>
+#include <optional>
 #include <variant>
 #include "main.h"
 #include "controller/voltageController.hpp"

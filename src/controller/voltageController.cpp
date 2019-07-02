@@ -1,5 +1,6 @@
-#include "main.h"
 #include "controller/voltageController.hpp"
+#include <memory>
+#include "main.h"
 
 VoltageController::VoltageController(std::shared_ptr<AbstractMotor> motor,
 AbstractMotor::gearset gearing, AbstractMotor::brakeMode brakeMode)

@@ -1,5 +1,7 @@
-#include "main.h"
 #include "robot/shooter.hpp"
+#include <memory>
+#include "main.h"
+#include "controller/voltageController.hpp"
 
 namespace robot::shooter {
 

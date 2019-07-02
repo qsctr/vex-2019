@@ -1,3 +1,4 @@
+#include <optional>
 #include "main.h"
 #include "constants.hpp"
 #include "robot.hpp"
