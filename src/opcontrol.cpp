@@ -61,39 +61,6 @@ namespace {
             {controllerIds::ball, ControllerDigital::L2};
     }
 
-    void capFlipSequence(double capIntakeDownPosition) {
-        robot::capIntake::controller->movePosition(
-        robot::capIntake::positions::flip, [=] {
-            robot::capIntake::controller->movePosition(
-                capIntakeDownPosition);
-        });
-    }
-
-    void poleFlipSequence(double liftUpPosition, double capIntakeDownPosition,
-    double liftDownPosition) {
-        robot::lift::controller->movePosition(liftUpPosition, [=] {
-            robot::capIntake::controller->movePosition(
-            robot::capIntake::positions::flip, [=] {
-                if (capIntakeDownPosition >
-                robot::capIntake::positions::flat) {
-                    robot::capIntake::controller->movePosition(
-                    robot::capIntake::positions::flat, [=] {
-                        robot::capIntake::controller->movePosition(
-                        capIntakeDownPosition, [=] {
-                            robot::lift::controller->movePosition(
-                                liftDownPosition);
-                        });
-                    });
-                } else {
-                    robot::capIntake::controller->movePosition(
-                    capIntakeDownPosition, [=] {
-                        robot::lift::controller->movePosition(liftDownPosition);
-                    });
-                }
-            });
-        });
-    }
-
     std::optional<double> ballControl(ControllerAnalog analog,
     ControllerButton& positiveAdjust, ControllerButton& negativeAdjust,
     double adjustPower) {
@@ -133,6 +100,28 @@ namespace {
         robot::drive::controller->tank(capLeft, capRight);
     }
 
+    void poleFlip(double liftUpPosition, double capIntakeDownPosition,
+    double liftDownPosition) {
+        robot::lift::controller->movePosition(liftUpPosition, [=] {
+            robot::capIntake::controller->movePosition(
+            robot::capIntake::positions::flip, [=] {
+                auto placeAndLiftDown = [=] {
+                    robot::capIntake::controller->movePosition(
+                    capIntakeDownPosition, [=] {
+                        robot::lift::controller->movePosition(liftDownPosition);
+                    });
+                };
+                if (capIntakeDownPosition >
+                robot::capIntake::positions::flat) {
+                    robot::capIntake::controller->movePosition(
+                        robot::capIntake::positions::flat, placeAndLiftDown);
+                } else {
+                    placeAndLiftDown();
+                }
+            });
+        });
+    }
+
 }
 
 void opcontrol() {
@@ -141,7 +130,7 @@ void opcontrol() {
         if (controls::groundPickup.changedToPressed()) {
             robot::lift::controller->movePosition(
             robot::lift::positions::initialGroundPickup,
-            robot::lift::isDown, [&] {
+            robot::lift::isDown, [] {
                 robot::lift::controller->movePosition(
                     robot::lift::positions::holdGroundPickup);
             });
@@ -157,23 +146,22 @@ void opcontrol() {
                 });
             });
         } else if (controls::highPoleDelivery.changedToPressed()) {
-            if (robot::capIntake::controller->getPosition() >
-            robot::capIntake::positions::highPoleDelivery) {
-                robot::lift::controller->movePosition(
-                robot::lift::positions::highPoleDelivery, [] {
+            bool capIntakeAboveDelivery =
+                robot::capIntake::controller->getPosition() >
+                robot::capIntake::positions::highPoleDelivery;
+            robot::lift::controller->movePosition(
+            robot::lift::positions::highPoleDelivery, [=] {
+                if (capIntakeAboveDelivery) {
                     robot::capIntake::controller->movePosition(
                     robot::capIntake::positions::flat, [] {
                         robot::capIntake::controller->movePosition(
                             robot::capIntake::positions::highPoleDelivery);
                     });
-                });
-            } else {
-                robot::lift::controller->movePosition(
-                robot::lift::positions::highPoleDelivery, [] {
+                } else {
                     robot::capIntake::controller->movePosition(
                         robot::capIntake::positions::highPoleDelivery);
-                });
-            }
+                }
+            });
         } else if (controls::lowPolePickup.changedToPressed()) {
             robot::lift::controller->movePosition(
                 robot::lift::positions::lowPolePickup);
@@ -188,16 +176,20 @@ void opcontrol() {
             auto liftTarget = robot::lift::controller->getTarget();
             if (liftTarget
             && liftTarget.value() == robot::lift::positions::lowPolePickup) {
-                poleFlipSequence(robot::lift::positions::lowPoleDelivery,
+                poleFlip(robot::lift::positions::lowPoleDelivery,
                     robot::capIntake::positions::lowPoleDelivery,
                     robot::lift::positions::lowPoleDelivery2);
             } else if (liftTarget
             && liftTarget.value() == robot::lift::positions::highPolePickup) {
-                poleFlipSequence(robot::lift::positions::highPoleDelivery,
+                poleFlip(robot::lift::positions::highPoleDelivery,
                     robot::capIntake::positions::highPoleDelivery,
                     robot::lift::positions::highPoleDelivery2);
             } else {
-                capFlipSequence(robot::capIntake::positions::flat);
+                robot::capIntake::controller->movePosition(
+                robot::capIntake::positions::flip, [] {
+                    robot::capIntake::controller->movePosition(
+                        robot::capIntake::positions::flat);
+                });
             }
         } else if (controls::capIntakeUp.changedToPressed()) {
             robot::capIntake::controller->movePosition(
