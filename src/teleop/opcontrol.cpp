@@ -3,8 +3,6 @@
 #include "robot.hpp"
 #include "teleop/controls.hpp"
 
-#include <cstdio>
-
 namespace teleop {
 
     constexpr float ANALOG_DEADBAND {0.05};
@@ -47,49 +45,39 @@ namespace teleop {
         });
     }
 
-    constexpr bool analogActive(float leftAnalog, float rightAnalog) {
-        return abs(leftAnalog) > ANALOG_DEADBAND
-            || abs(rightAnalog) > ANALOG_DEADBAND;
-    }
-
-    std::optional<double> getSideDrivePower(float analog,
-    ControllerButton adjustPositive, ControllerButton adjustNegative) {
-        if (abs(analog) > ANALOG_DEADBAND)
-            return analog;
-        if (adjustPositive.isPressed())
-            return 0.2;
-        if (adjustNegative.isPressed())
-            return -0.2;
+    std::optional<double> ballControl(ControllerAnalog analog,
+    ControllerButton& positiveAdjust, ControllerButton& negativeAdjust,
+    double adjustPower) {
+        auto analogValue = controllers::ball.getAnalog(analog);
+        if (abs(analogValue) > ANALOG_DEADBAND) {
+            return analogValue;
+        }
+        if (positiveAdjust.isPressed()) {
+            return adjustPower;
+        }
+        if (negativeAdjust.isPressed()) {
+            return -adjustPower;
+        }
         return std::nullopt;
     }
 
     void drive() {
         float capLeft = controllers::cap.getAnalog(controls::capDriveLeft);
         float capRight = controllers::cap.getAnalog(controls::capDriveRight);
-        if (!analogActive(capLeft, capRight)) {
-            float ballForward =
-                controllers::ball.getAnalog(controls::ballDriveForward);
-            float ballYaw =
-                controllers::ball.getAnalog(controls::ballDriveYaw);
-            std::optional<double> forwardPower;
-            if (abs(ballForward) > ANALOG_DEADBAND) {
-                forwardPower = ballForward;
-            } else if (controls::ballDriveAdjustForward.isPressed()) {
-                forwardPower = 0.2;
-            } else if (controls::ballDriveAdjustBackward.isPressed()) {
-                forwardPower = -0.2;
-            }
-            std::optional<double> yawPower;
-            if (abs(ballYaw) > ANALOG_DEADBAND) {
-                yawPower = ballYaw;
-            } else if (controls::ballDriveAdjustLeft.isPressed()) {
-                yawPower = 0.3;
-            } else if (controls::ballDriveAdjustRight.isPressed()) {
-                yawPower = -0.3;
-            }
+        if (abs(capLeft) < ANALOG_DEADBAND && abs(capRight) < ANALOG_DEADBAND) {
+            auto forwardPower = ballControl(
+                controls::ballDriveForward,
+                controls::ballDriveAdjustForward,
+                controls::ballDriveAdjustBackward,
+                0.2);
+            auto yawPower = ballControl(
+                controls::ballDriveYaw,
+                controls::ballDriveAdjustLeft,
+                controls::ballDriveAdjustRight,
+                0.3);
             if (forwardPower || yawPower) {
-                robot::drive::controller->arcade(-forwardPower.value_or(0),
-                    yawPower.value_or(0));
+                robot::drive::controller->arcade(
+                    -forwardPower.value_or(0), yawPower.value_or(0));
                 return;
             }
         }
@@ -99,12 +87,7 @@ namespace teleop {
 }
 
 void opcontrol() {
-    puts("hi");
     using namespace teleop;
-    // robot::lift::reset();
-    // robot::drive::left.setReversed(false);
-    // robot::drive::right.setReversed(true);
-    int i = 0;
     while (true) {
         drive();
         if (controls::groundPickup.changedToPressed()) {
@@ -210,12 +193,6 @@ void opcontrol() {
         if (robot::guide::limitSwitch.changedToPressed()) {
             controllers::cap.rumble(".");
         }
-        printf("%f %f\n", robot::capIntake::controller->getPosition(), robot::capIntake::potentiometer.get());
-        if (i == 100) {
-            controllers::cap.setText(0, 0, std::to_string(robot::lift::controller->getPosition()));
-            i = 0;
-        }
-        pros::Task::delay(10);
-        i++;
+        pros::Task::delay(loopCycleTime);
     }
 }
