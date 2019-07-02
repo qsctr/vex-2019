@@ -8,7 +8,7 @@ AbstractMotor::gearset gearing, AbstractMotor::brakeMode brakeMode)
     motor->setBrakeMode(brakeMode);
 }
 
-std::shared_ptr<AbstractMotor> VoltageController::getMotor() {
+const std::shared_ptr<AbstractMotor> VoltageController::getMotor() {
     return motor;
 }
 

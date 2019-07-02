@@ -3,11 +3,11 @@
 #include "util/overload.hpp"
 
 MultiController::MultiController(std::shared_ptr<AbstractMotor> motor,
-AbstractMotor::gearset gearing, AbstractMotor::brakeMode brakeMode)
-: VoltageController(motor, gearing, brakeMode),
-maxVelocity {toUnderlyingType(gearing)},
-posController {std::make_unique<AsyncPosIntegratedController>(
-    std::shared_ptr(motor), maxVelocity, TimeUtilFactory::create())}
+AbstractMotor::gearset gearing, AbstractMotor::brakeMode brakeMode) :
+    VoltageController(motor, gearing, brakeMode),
+    maxVelocity {toUnderlyingType(gearing)},
+    posController {std::make_unique<AsyncPosIntegratedController>(
+        std::shared_ptr(motor), maxVelocity, TimeUtilFactory::create())}
 {
     posController->flipDisable(true);
 }
