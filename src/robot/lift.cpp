@@ -25,7 +25,7 @@ namespace robot::lift {
     void reset() {
         auto startingTime = pros::millis();
         controller->moveVoltage(-1);
-        util::delayUntil([startingTime] {
+        util::delayUntil([=] {
             return isDown() || pros::millis() > startingTime + 1000;
         });
         controller->getMotor()->tarePosition();
